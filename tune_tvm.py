@@ -40,16 +40,24 @@ GEMM_SHAPES = [
     timeout=7200,          # 2 hours — tuning is slow
     volumes={"/tuning_results": volume},
 )
-def tune_gemm(M: int, N: int, K: int, max_trials: int = 800):
-    """
-    Autotune a single GEMM kernel using TVM MetaSchedule.
-    Saves the tuning database to the Modal Volume.
-    """
+def tune_gemm(M: int, N: int, K: int, max_trials: int = 800, debug_env: bool = False):
     import tvm
     import tvm.te as te
     from tvm import meta_schedule as ms
     import torch
 
+    print("TVM CUDA available:", tvm.cuda().exist)
+    info = tvm.support.libinfo()
+    for k, v in info.items():
+        if "CUDA" in k or "LLVM" in k:
+            print(k, v)
+
+    print("Torch CUDA available:", torch.cuda.is_available())
+    if torch.cuda.is_available():
+        print("GPU:", torch.cuda.get_device_name(0))
+
+    if debug_env:
+        return {"cuda": tvm.cuda().exist, "gpu": torch.cuda.get_device_name(0)}
     gpu_name = torch.cuda.get_device_name(0)
     print(f"\n{'='*60}")
     print(f"Tuning GEMM ({M}, {K}) x ({K}, {N}) on {gpu_name}")

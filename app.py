@@ -29,11 +29,15 @@ image = (
     .run_commands(
         "python -m pip install --upgrade pip setuptools wheel",
         "pip install numpy",
-        "pip install --index-url https://download.pytorch.org/whl/cu126 torch torchvision torchaudio",
-        "pip install cython decorator psutil scipy tornado typing_extensions cloudpickle ml-dtypes",
-        "wget https://apt.llvm.org/llvm.sh && chmod +x llvm.sh && ./llvm.sh 18",
+    )
+    .run_commands("pip install --index-url https://download.pytorch.org/whl/cu126 torch torchvision torchaudio")
+    .run_commands("pip install cython decorator psutil scipy tornado typing_extensions cloudpickle ml-dtypes")
+    .run_commands("wget https://apt.llvm.org/llvm.sh && chmod +x llvm.sh && ./llvm.sh 18")
+    .run_commands(
         "git clone --recursive https://github.com/apache/tvm /opt/tvm",
         "mkdir -p /opt/tvm/build",
+    )
+    .run_commands(
         "bash -c \"printf '%s\\n' "
         "'set(USE_CUDA ON)' "
         "'set(USE_CUDNN ON)' "
@@ -42,9 +46,9 @@ image = (
         "'set(USE_RPC ON)' "
         "'set(CMAKE_BUILD_TYPE RelWithDebInfo)' "
         "> /opt/tvm/build/config.cmake\"",
-        "cd /opt/tvm/build && cmake .. && cmake --build . -j$(nproc)",
-        "cd /opt/tvm/python && pip install -e .",
     )
+    .run_commands("cd /opt/tvm/build && cmake .. && cmake --build . -j$(nproc)")
+    .run_commands("pip install /opt/tvm/python")
     .env({
         "TVM_HOME": "/opt/tvm",
         "PYTHONPATH": "/opt/tvm/python:/opt/tvm:${PYTHONPATH}",

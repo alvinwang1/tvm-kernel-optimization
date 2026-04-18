@@ -48,7 +48,7 @@ image = (
         "> /opt/tvm/build/config.cmake\"",
     )
     .run_commands("cd /opt/tvm/build && cmake .. && cmake --build . -j$(nproc)")
-    .run_commands("pip install /opt/tvm/python")
+    .run_commands("pip install apache-tvm-ffi pytest")
     .env({
         "TVM_HOME": "/opt/tvm",
         "PYTHONPATH": "/opt/tvm/python:/opt/tvm:${PYTHONPATH}",
@@ -82,7 +82,8 @@ def verify_env():
 
     if torch.cuda.is_available():
         results["gpu_name"] = torch.cuda.get_device_name(0)
-        results["device_capability"] = torch.cuda.get_device_capability(0)
+        cap = torch.cuda.get_device_capability(0)
+        results["device_capability"] = list(cap)
 
     results["tvm"] = tvm.__version__
 

@@ -34,7 +34,10 @@ image = (
     .run_commands("pip install cython decorator psutil scipy tornado typing_extensions cloudpickle ml-dtypes")
     .run_commands("wget https://apt.llvm.org/llvm.sh && chmod +x llvm.sh && ./llvm.sh 18")
     .run_commands(
+        # Pin to v0.16.0 — last stable release with meta_schedule + te + autotvm.
+        # HEAD (0.24.dev) removed all legacy scheduling APIs.
         "git clone --recursive https://github.com/apache/tvm /opt/tvm",
+        "cd /opt/tvm && git checkout v0.16.0 && git submodule update --init --recursive",
         "mkdir -p /opt/tvm/build",
     )
     .run_commands(
@@ -43,12 +46,16 @@ image = (
         "'set(USE_CUDNN ON)' "
         "'set(USE_LLVM /usr/lib/llvm-18/bin/llvm-config)' "
         "'set(USE_GRAPH_EXECUTOR ON)' "
+        "'set(USE_META_SCHEDULE ON)' "
         "'set(USE_RPC ON)' "
         "'set(CMAKE_BUILD_TYPE RelWithDebInfo)' "
         "> /opt/tvm/build/config.cmake\"",
     )
     .run_commands("cd /opt/tvm/build && cmake .. && cmake --build . -j$(nproc)")
-    .run_commands("pip install apache-tvm-ffi pytest")
+    .run_commands("cd /opt/tvm && pip install -e python/")
+    # ↓ New packages go HERE — after the TVM build — so the cmake/compile
+    # layer above stays cached and doesn't rerun on every change.
+    .run_commands("pip install 'xgboost<2.0.0' tabulate")
     .env({
         "TVM_HOME": "/opt/tvm",
         "PYTHONPATH": "/opt/tvm/python:/opt/tvm:${PYTHONPATH}",
@@ -79,6 +86,13 @@ def verify_env():
     results["torch_cuda"] = torch.version.cuda
     results["cuda_available"] = torch.cuda.is_available()
     results["gpu_count"] = torch.cuda.device_count()
+
+    # Verify meta_schedule is available
+    try:
+        from tvm import meta_schedule as ms
+        results["meta_schedule"] = "OK"
+    except ImportError as e:
+        results["meta_schedule"] = f"FAILED: {e}"
 
     if torch.cuda.is_available():
         results["gpu_name"] = torch.cuda.get_device_name(0)

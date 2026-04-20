@@ -38,9 +38,5 @@ htmlcov/
 .env.*
 *.local
 
-# Project-generated result artifacts
-benchmark_results*.json
-attention_results*.json
-
 # TVM / tuning local outputs (if used locally)
 tuning_results/

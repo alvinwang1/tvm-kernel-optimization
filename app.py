@@ -53,9 +53,8 @@ image = (
     )
     .run_commands("cd /opt/tvm/build && cmake .. && cmake --build . -j$(nproc)")
     .run_commands("cd /opt/tvm && pip install -e python/")
-    # ↓ New packages go HERE — after the TVM build — so the cmake/compile
-    # layer above stays cached and doesn't rerun on every change.
-    .run_commands("pip install 'xgboost<2.0.0' tabulate")
+    # ↓ New packages for SOTA benchmarking
+    .run_commands("pip install xformers triton matplotlib pandas tabulate packaging")
     .env({
         "TVM_HOME": "/opt/tvm",
         "PYTHONPATH": "/opt/tvm/python:/opt/tvm:${PYTHONPATH}",

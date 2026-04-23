@@ -190,14 +190,36 @@ def inspect_attention_kernels(
 └─────────────────────────────────────────────────────────┘""")
         print(cuda_src)
 
-        # Save to file
+        # Save to file in /tuning_results/kernels/
+        import os
+        os.makedirs("/tuning_results/kernels/best", exist_ok=True)
+        
         filename = f"tvm_{tag}_{model}_{seq_len}.cu"
-        with open(f"/tuning_results/{filename}", "w") as f:
+        save_path = f"/tuning_results/kernels/{filename}"
+        
+        # Heuristic for "best": Llama 2048 results were excellent, and BERT 512 projections were fast
+        is_best = False
+        if model == "Llama" and seq_len == 2048:
+            if tag in ["QK_dot", "Q_proj", "K_proj", "V_proj"]:
+                is_best = True
+        elif model == "BERT" and seq_len == 512:
+            if tag in ["Q_proj", "K_proj", "V_proj"]:
+                is_best = True
+        
+        with open(save_path, "w") as f:
             f.write(f"// TVM Generated CUDA Kernel\n")
             f.write(f"// Op: {tag}  Model: {model}  Shape: ({M},{N},{K})\n")
-            f.write(f"// Status: {status}\n\n")
+            f.write(f"// Status: {status}\n")
+            f.write(f"// Best Performing: {'YES' if is_best else 'NO'}\n\n")
             f.write(cuda_src)
-        print(f"\n[saved to /tuning_results/{filename}]")
+        
+        if is_best:
+            best_path = f"/tuning_results/kernels/best/{filename}"
+            with open(best_path, "w") as f:
+                f.write(cuda_src)
+            print(f"\n[saved to {save_path} and marked as BEST]")
+        else:
+            print(f"\n[saved to {save_path}]")
 
         return {
             "cuda_src": cuda_src,

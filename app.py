@@ -31,7 +31,7 @@ image = (
         "pip install numpy",
     )
     .run_commands("pip install --index-url https://download.pytorch.org/whl/cu126 torch torchvision torchaudio")
-    .run_commands("pip install cython decorator psutil scipy tornado typing_extensions cloudpickle ml-dtypes")
+    .run_commands("pip install cython decorator psutil scipy tornado typing_extensions cloudpickle ml-dtypes xgboost==1.7.6")
     .run_commands("wget https://apt.llvm.org/llvm.sh && chmod +x llvm.sh && ./llvm.sh 18")
     .run_commands(
         # Pin to v0.16.0 — last stable release with meta_schedule + te + autotvm.

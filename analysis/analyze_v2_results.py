@@ -6,10 +6,11 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 
-ROOT = Path(__file__).resolve().parent
-RESULTS_PATH = ROOT / "attention_results_v2.json"
-REPORT_PATH = ROOT / "attention_v2_analysis_report.md"
-CHART_PATH = ROOT / "attention_v2_analysis_charts.png"
+ROOT = Path(__file__).resolve().parent.parent
+RESULTS_PATH = ROOT / "results" / "attention_results_v2.json"
+REPORT_PATH = ROOT / "reports" / "attention_v2_analysis_report.md"
+CHART_PATH = ROOT / "reports" / "attention_v2_analysis_charts.png"
+KERNEL_ROOT = ROOT / "kernels"
 
 
 def load_results(path: Path) -> pd.DataFrame:
@@ -195,7 +196,7 @@ Across 25 generated `.cu` files:
 
 def main() -> None:
     df = load_results(RESULTS_PATH)
-    kdf = load_kernel_stats(ROOT)
+    kdf = load_kernel_stats(KERNEL_ROOT)
     make_charts(df, kdf, CHART_PATH)
     build_report(df, kdf, REPORT_PATH, CHART_PATH)
     print(f"Generated: {CHART_PATH.name}")

@@ -19,6 +19,10 @@ import time
 import json
 import os
 
+import sys
+from pathlib import Path
+sys.path.append(str(Path(__file__).parent.parent))
+
 try:
     from app import image
 except ImportError:
@@ -196,5 +200,6 @@ def run_benchmark():
 @app.local_entrypoint()
 def main():
     results = run_benchmark.remote()
-    with open("sota_benchmark_final.json", "w") as f:
+    out_path = Path(__file__).parent.parent / "results" / "sota_benchmark_final.json"
+    with open(out_path, "w") as f:
         json.dump(results, f, indent=2)

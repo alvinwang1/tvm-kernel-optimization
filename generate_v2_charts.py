@@ -14,7 +14,7 @@ import matplotlib.patches as mpatches
 from matplotlib.gridspec import GridSpec
 
 # ── Data ─────────────────────────────────────────────────────────────────────
-with open("attention_results_v2.json") as f:
+with open("results/attention_results_v2.json") as f:
     data = json.load(f)
 
 # Build a label for each shape

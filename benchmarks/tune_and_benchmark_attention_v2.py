@@ -20,6 +20,8 @@ import sys
 from pathlib import Path
 sys.path.append(str(Path(__file__).parent.parent))
 
+import modal
+
 try:
     from app import image
 except ModuleNotFoundError:
@@ -189,12 +191,11 @@ def tune_and_benchmark_attention_v2(
         return tvm.nd.array(np.zeros(shape, dtype="float16"), dev)
 
     q_lib = k_lib = v_lib = qk_lib = av_lib = None
-    q_tuned = k_tuned = v_tuned = qk_tuned = av_tuned = False
+    proj_tuned = qk_tuned = av_tuned = False
     if not pytorch_only:
-        # Tune/compile kernels
-        q_lib, q_tuned = prepare_gemm(seq_len, hidden_dim, hidden_dim, "Q_proj")
-        k_lib, k_tuned = prepare_gemm(seq_len, hidden_dim, hidden_dim, "K_proj")
-        v_lib, v_tuned = prepare_gemm(seq_len, hidden_dim, hidden_dim, "V_proj")
+        # Q/K/V projections share the same shape — tune once, reuse for all three.
+        proj_lib, proj_tuned = prepare_gemm(seq_len, hidden_dim, hidden_dim, "proj")
+        q_lib = k_lib = v_lib = proj_lib
         qk_lib, qk_tuned = prepare_gemm(seq_len, seq_len, head_dim, "QK_dot")
         av_lib, av_tuned = prepare_gemm(seq_len, head_dim, seq_len, "AV_sum")
 
@@ -206,7 +207,7 @@ def tune_and_benchmark_attention_v2(
         "gpu": gpu_name,
         "arch": arch,
         "pytorch_only": pytorch_only,
-        "tuned": all([q_tuned, k_tuned, v_tuned, qk_tuned, av_tuned]) if not pytorch_only else None,
+        "tuned": all([proj_tuned, qk_tuned, av_tuned]) if not pytorch_only else None,
     }
 
     print("\n[PyTorch baselines]")

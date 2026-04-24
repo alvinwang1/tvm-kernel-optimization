@@ -1,0 +1,67 @@
+[
+  {
+    "workload": "BERT-128",
+    "seq_len": 128,
+    "eager_ms": 0.07462200999999169,
+    "sdpa_ms": 0.04765315000000214,
+    "flash_ms": 0.0457628299999957,
+    "mem_eff_ms": 0.045187730000000315,
+    "tvm_ms": NaN,
+    "mem_eager_mb": 13.375,
+    "mem_fused_mb": 12.4443359375,
+    "speedup_vs_eager": 1.6306248979794016,
+    "speedup_vs_tvm": 0
+  },
+  {
+    "workload": "BERT-512",
+    "seq_len": 512,
+    "eager_ms": 0.07812083000000136,
+    "sdpa_ms": 0.05149309000000102,
+    "flash_ms": 0.05104085000000147,
+    "mem_eff_ms": 0.04392333999999387,
+    "tvm_ms": NaN,
+    "mem_eager_mb": 28.0,
+    "mem_fused_mb": 18.3212890625,
+    "speedup_vs_eager": 1.5305550358193312,
+    "speedup_vs_tvm": 0
+  },
+  {
+    "workload": "Llama-128",
+    "seq_len": 128,
+    "eager_ms": 0.1452231999999931,
+    "sdpa_ms": 0.1168278499999964,
+    "flash_ms": 0.11681539000000463,
+    "mem_eff_ms": 0.11894792999999737,
+    "tvm_ms": NaN,
+    "mem_eager_mb": 112.140625,
+    "mem_fused_mb": 109.1416015625,
+    "speedup_vs_eager": 1.2431855083477217,
+    "speedup_vs_tvm": 0
+  },
+  {
+    "workload": "Llama-512",
+    "seq_len": 512,
+    "eager_ms": 0.337715309999993,
+    "sdpa_ms": 0.2715391200000017,
+    "flash_ms": 0.2819490700000049,
+    "mem_eff_ms": 0.30950672000000345,
+    "tvm_ms": NaN,
+    "mem_eager_mb": 160.875,
+    "mem_fused_mb": 124.6884765625,
+    "speedup_vs_eager": 1.1977883452496834,
+    "speedup_vs_tvm": 0
+  },
+  {
+    "workload": "Llama-2048",
+    "seq_len": 2048,
+    "eager_ms": 4.34016411,
+    "sdpa_ms": 1.1692772800000029,
+    "flash_ms": 1.1811263299999997,
+    "mem_eff_ms": 1.2861481499999972,
+    "tvm_ms": NaN,
+    "mem_eager_mb": 716.125,
+    "mem_fused_mb": 184.3759765625,
+    "speedup_vs_eager": 3.6745977121685205,
+    "speedup_vs_tvm": 0
+  }
+]

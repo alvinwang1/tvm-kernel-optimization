@@ -35,6 +35,7 @@ def inspect_attention_kernels(
     model: str,
     retune_on_miss: bool = False,
     retune_trials: int = 128,
+    use_v2_cache: bool = True,
 ):
     import importlib
     import tvm
@@ -115,8 +116,10 @@ def inspect_attention_kernels(
         return any(n in lowered for n in needles)
 
     # ── Helper: inspect one kernel ────────────────────────────────────────────
+    cache_prefix = "attn_v2" if use_v2_cache else "attn"
+
     def inspect_one(tag, M, N, K, description):
-        work_dir = f"/tuning_results/attn_{tag}_{M}_{N}_{K}_{arch}"
+        work_dir = f"/tuning_results/{cache_prefix}_{tag}_{M}_{N}_{K}_{arch}"
         mod, A_ph, B_ph, C_ph = make_gemm_mod(M, N, K)
 
         print(f"\n{'='*70}")
@@ -190,31 +193,33 @@ def inspect_attention_kernels(
 └─────────────────────────────────────────────────────────┘""")
         print(cuda_src)
 
-        # Save to file in /tuning_results/kernels/
+        # Save to file in a versioned folder in /tuning_results/kernels/
         import os
-        os.makedirs("/tuning_results/kernels/best", exist_ok=True)
+        kernel_root = "/tuning_results/kernels/v2" if use_v2_cache else "/tuning_results/kernels/v1"
+        os.makedirs(f"{kernel_root}/best", exist_ok=True)
         
         filename = f"tvm_{tag}_{model}_{seq_len}.cu"
-        save_path = f"/tuning_results/kernels/{filename}"
+        save_path = f"{kernel_root}/{filename}"
         
         # Heuristic for "best": Llama 2048 results were excellent, and BERT 512 projections were fast
         is_best = False
         if model == "Llama" and seq_len == 2048:
-            if tag in ["QK_dot", "Q_proj", "K_proj", "V_proj"]:
+            if tag in ["QK_dot", "proj", "Q_proj", "K_proj", "V_proj"]:
                 is_best = True
         elif model == "BERT" and seq_len == 512:
-            if tag in ["Q_proj", "K_proj", "V_proj"]:
+            if tag in ["proj", "Q_proj", "K_proj", "V_proj"]:
                 is_best = True
         
         with open(save_path, "w") as f:
             f.write(f"// TVM Generated CUDA Kernel\n")
             f.write(f"// Op: {tag}  Model: {model}  Shape: ({M},{N},{K})\n")
             f.write(f"// Status: {status}\n")
+            f.write(f"// Cache Family: {'v2' if use_v2_cache else 'v1'}\n")
             f.write(f"// Best Performing: {'YES' if is_best else 'NO'}\n\n")
             f.write(cuda_src)
         
         if is_best:
-            best_path = f"/tuning_results/kernels/best/{filename}"
+            best_path = f"{kernel_root}/best/{filename}"
             with open(best_path, "w") as f:
                 f.write(cuda_src)
             print(f"\n[saved to {save_path} and marked as BEST]")
@@ -231,20 +236,26 @@ def inspect_attention_kernels(
     # INSPECT EACH ATTENTION KERNEL
     # ══════════════════════════════════════════════════════════════════════════
 
-    q_result = inspect_one(
-        "Q_proj", seq_len, hidden_dim, hidden_dim,
-        "Query projection: X @ Wq"
-    )
+    if use_v2_cache:
+        proj_result = inspect_one(
+            "proj", seq_len, hidden_dim, hidden_dim,
+            "Shared projection kernel used for X @ Wq, X @ Wk, X @ Wv"
+        )
+    else:
+        q_result = inspect_one(
+            "Q_proj", seq_len, hidden_dim, hidden_dim,
+            "Query projection: X @ Wq"
+        )
 
-    k_result = inspect_one(
-        "K_proj", seq_len, hidden_dim, hidden_dim,
-        "Key projection: X @ Wk"
-    )
+        k_result = inspect_one(
+            "K_proj", seq_len, hidden_dim, hidden_dim,
+            "Key projection: X @ Wk"
+        )
 
-    v_result = inspect_one(
-        "V_proj", seq_len, hidden_dim, hidden_dim,
-        "Value projection: X @ Wv"
-    )
+        v_result = inspect_one(
+            "V_proj", seq_len, hidden_dim, hidden_dim,
+            "Value projection: X @ Wv"
+        )
 
     qk_result = inspect_one(
         "QK_dot", seq_len, seq_len, head_dim,
@@ -265,10 +276,15 @@ def inspect_attention_kernels(
     print("COMPARISON: TVM vs PyTorch/cuBLAS")
     print(f"{'='*70}")
 
+    if use_v2_cache:
+        projection_results = [proj_result]
+    else:
+        projection_results = [q_result, k_result, v_result]
+
     # Check if Tensor Cores were found
     used_tensor_cores = any(
         r and r.get("uses_tensor_cores", False)
-        for r in [q_result, k_result, v_result, qk_result, av_result]
+        for r in [*projection_results, qk_result, av_result]
     )
 
     print(f"""
@@ -326,9 +342,10 @@ WHAT TO PUT IN YOUR REPORT:
         "model": model,
         "seq_len": seq_len,
         "used_tensor_cores": used_tensor_cores,
-        "q_proj_status":  q_result["status"]  if q_result  else "missing",
-        "k_proj_status":  k_result["status"]  if k_result  else "missing",
-        "v_proj_status":  v_result["status"]  if v_result  else "missing",
+        "proj_status": proj_result["status"] if use_v2_cache and proj_result else "missing",
+        "q_proj_status": q_result["status"] if (not use_v2_cache and q_result) else "n/a",
+        "k_proj_status": k_result["status"] if (not use_v2_cache and k_result) else "n/a",
+        "v_proj_status": v_result["status"] if (not use_v2_cache and v_result) else "n/a",
         "qk_dot_status":  qk_result["status"] if qk_result else "missing",
         "av_sum_status":  av_result["status"] if av_result else "missing",
     }
@@ -355,6 +372,7 @@ def main():
         )
         print(f"\n[{model} seq={seq_len}]")
         print(f"  Used Tensor Cores: {result['used_tensor_cores']}")
+        print(f"  proj:    {result['proj_status']}")
         print(f"  Q_proj:  {result['q_proj_status']}")
         print(f"  K_proj:  {result['k_proj_status']}")
         print(f"  V_proj:  {result['v_proj_status']}")

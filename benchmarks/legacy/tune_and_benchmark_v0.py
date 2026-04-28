@@ -17,11 +17,11 @@ Usage:
 import modal
 from pathlib import Path
 
-# `from app import image` only runs in the local Python process where app.py
+# `from modal_app import image` only runs in the local Python process where app.py
 # exists. The remote container already has `image` baked into the function
 # decorator — it never re-evaluates this import at runtime.
 try:
-    from app import image
+    from modal_app import image
 except ModuleNotFoundError:
     image = None  # remote: image already bound via @app.function(image=...)
 

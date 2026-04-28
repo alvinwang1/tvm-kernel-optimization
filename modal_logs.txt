@@ -1,0 +1,225 @@
+2026-04-28 05:47:52 [INFO] [task_scheduler.cc:195] Sending 18 sample(s) to runner
+2026-04-28 05:47:58 [DEBUG] XGB validation: p-rmse: 0.256687	a-peak@32: 0.864322
+2026-04-28 05:47:58 [DEBUG] XGB iter   0: tr-p-rmse: 0.567461	tr-a-peak@32: 0.862305	tr-rmse: 0.303888	tr-rmse: 0.303888
+2026-04-28 05:47:58 [DEBUG] XGB iter   0: tr-p-rmse: 0.540300	tr-a-peak@32: 0.804372	tr-rmse: 0.362863	tr-rmse: 0.362863
+2026-04-28 05:47:58 [DEBUG] XGB iter  25: tr-p-rmse: 0.044465	tr-a-peak@32: 1.000000	tr-rmse: 0.371480	tr-rmse: 0.371480
+2026-04-28 05:47:58 [DEBUG] XGB iter  25: tr-p-rmse: 0.033556	tr-a-peak@32: 1.000000	tr-rmse: 0.436065	tr-rmse: 0.436065
+2026-04-28 05:47:58 [DEBUG] XGB iter  50: tr-p-rmse: 0.044465	tr-a-peak@32: 1.000000	tr-rmse: 0.371480	tr-rmse: 0.371480
+2026-04-28 05:47:58 [DEBUG] XGB iter  50: tr-p-rmse: 0.033556	tr-a-peak@32: 1.000000	tr-rmse: 0.436065	tr-rmse: 0.436065
+2026-04-28 05:47:58 [DEBUG] XGB stopped. Best iteration: [19] tr-p-rmse:0.04446	tr-a-peak@32:1.00000	tr-rmse:0.37148	tr-rmse:0.37148 
+2026-04-28 05:47:58 [INFO] [task_scheduler.cc:237] [Updated] Task #0: "main"
+2026-04-28 05:47:58 [INFO] [task_scheduler.cc:320] 
+ ID | Name |      FLOP | Weight | Speed (GFLOPS) | Latency (us) | Weighted Latency (us) | Trials | Done 
+--------------------------------------------------------------------------------------------------------
+  0 | main | 150994944 |      1 |     15960.9339 |       9.4603 |                9.4603 |     50 |      
+--------------------------------------------------------------------------------------------------------
+Total trials: 50
+Total latency (us): 9.46028
+
+2026-04-28 05:47:58 [INFO] [task_scheduler.cc:260] Task #0 has finished. Remaining task(s): 0
+2026-04-28 05:47:58 [DEBUG] XGB stopped. Best iteration: [19] tr-p-rmse:0.03356	tr-a-peak@32:1.00000	tr-rmse:0.43606	tr-rmse:0.43606 
+2026-04-28 05:47:58 [INFO] [task_scheduler.cc:320] 
+ ID | Name |      FLOP | Weight | Speed (GFLOPS) | Latency (us) | Weighted Latency (us) | Trials | Done 
+--------------------------------------------------------------------------------------------------------
+  0 | main | 150994944 |      1 |     15960.9339 |       9.4603 |                9.4603 |     50 |    Y 
+--------------------------------------------------------------------------------------------------------
+Total trials: 50
+Total latency (us): 9.46028
+
+2026-04-28 05:47:58 [INFO] [task_scheduler.cc:237] [Updated] Task #0: "main"
+2026-04-28 05:47:58 [INFO] [task_scheduler.cc:320] 
+ ID | Name |        FLOP | Weight | Speed (GFLOPS) | Latency (us) | Weighted Latency (us) | Trials | Done 
+----------------------------------------------------------------------------------------------------------
+  0 | main | 17179869184 |      1 |    158656.6895 |     108.2833 |              108.2833 |     32 |      
+----------------------------------------------------------------------------------------------------------
+Total trials: 32
+Total latency (us): 108.283
+
+2026-04-28 05:47:58 [INFO] [task_scheduler.cc:180] TaskScheduler picks Task #0: "main"
+  [cache] K_proj (128,768,768)
+  [cache] V_proj (128,768,768)
+2026-04-28 05:48:05 [DEBUG] XGB iter   0: tr-p-rmse: 0.593316	tr-a-peak@32: 0.984848	tr-rmse: 0.361347	tr-rmse: 0.361347
+2026-04-28 05:48:05 [DEBUG] XGB iter  25: tr-p-rmse: 0.033858	tr-a-peak@32: 1.000000	tr-rmse: 0.421010	tr-rmse: 0.421010
+2026-04-28 05:48:05 [DEBUG] XGB iter  50: tr-p-rmse: 0.033858	tr-a-peak@32: 1.000000	tr-rmse: 0.421010	tr-rmse: 0.421010
+2026-04-28 05:48:05 [DEBUG] XGB stopped. Best iteration: [21] tr-p-rmse:0.03386	tr-a-peak@32:1.00000	tr-rmse:0.42101	tr-rmse:0.42101 
+2026-04-28 05:48:05 [INFO] [task_scheduler.cc:237] [Updated] Task #0: "main"
+2026-04-28 05:48:05 [INFO] [task_scheduler.cc:320] 
+ ID | Name |        FLOP | Weight | Speed (GFLOPS) | Latency (us) | Weighted Latency (us) | Trials | Done 
+----------------------------------------------------------------------------------------------------------
+  0 | main | 68719476736 |      1 |    236473.6328 |     290.6010 |              290.6010 |     32 |      
+----------------------------------------------------------------------------------------------------------
+Total trials: 32
+Total latency (us): 290.601
+
+2026-04-28 05:48:05 [INFO] [task_scheduler.cc:180] TaskScheduler picks Task #0: "main"
+  [cache] QK_dot (128,128,64)
+  [cache] AV_sum (128,64,128)
+  [tune] attn_body_fused_v3_128_12_64_sm_89 up to 50 trials
+  [tune-error] attn_body_fused_v3_128_12_64_sm_89 MetaSchedule failed: TuneContext.__init__() got an unexpected keyword argument 'work_dir'
+  Falling back to naive schedule...
+  [fallback] attn_body_fused_v3_128_12_64_sm_89 uses parallel fallback schedule
+Traceback (most recent call last):
+  File "/pkg/modal/_runtime/container_io_manager.py", line 947, in handle_input_exception
+    yield
+  File "/pkg/modal/_container_entrypoint.py", line 172, in run_input_sync
+    values = io_context.call_function_sync()
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/pkg/modal/_runtime/container_io_manager.py", line 225, in call_function_sync
+    expected_value_or_values = self.finalized_function.callable(*args, **kwargs)
+                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/tune_attention.py", line 404, in tune_and_benchmark_attention_v2
+    fused_attn_lib, fused_attn_tuned = prepare_attn_body(
+                                       ^^^^^^^^^^^^^^^^^^
+  File "/root/tune_attention.py", line 381, in prepare_attn_body
+    return tvm.build(sch.mod, target=target), False
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/tvm/python/tvm/driver/build_module.py", line 297, in build
+    rt_mod_host = _driver_ffi.tir_to_runtime(annotated_mods, target_host)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/tvm/python/tvm/_ffi/_ctypes/packed_func.py", line 239, in __call__
+    raise_last_ffi_error()
+  File "/opt/tvm/python/tvm/_ffi/base.py", line 481, in raise_last_ffi_error
+    raise py_err
+  File "/opt/tvm/src/driver/driver_api.cc", line 531, in operator()
+    return TIRToRuntime(inputs_arg, host_target);
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/tvm/src/driver/driver_api.cc", line 492, in tvm::TIRToRuntime(tvm::runtime::Map<tvm::Target, tvm::IRModule, void, void> const&, tvm::Target const&)
+    auto pair = SplitMixedModule(ir_module, target, target_host);
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/tvm/src/driver/driver_api.cc", line 418, in tvm::SplitMixedModule(tvm::IRModule, tvm::Target const&, tvm::Target const&)
+    mod_mixed = ApplyPasses(mod_mixed, MixedModulePassManager(mod_mixed, target));
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/tvm/src/driver/driver_api.cc", line 289, in tvm::ApplyPasses(tvm::IRModule, tvm::transform::Sequential)
+    mod = seq(std::move(mod));
+                    ^^^^^^^^^^^
+  File "/opt/tvm/src/tir/analysis/verify_memory.cc", line 205, in operator()
+    LOG(FATAL) << "RuntimeError: Memory verification failed with the following errors:\n"
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tvm._ffi.base.TVMError: Traceback (most recent call last):
+  4: operator()
+        at /opt/tvm/src/driver/driver_api.cc:531
+  3: tvm::TIRToRuntime(tvm::runtime::Map<tvm::Target, tvm::IRModule, void, void> const&, tvm::Target const&)
+        at /opt/tvm/src/driver/driver_api.cc:492
+  2: tvm::SplitMixedModule(tvm::IRModule, tvm::Target const&, tvm::Target const&)
+        at /opt/tvm/src/driver/driver_api.cc:418
+  1: tvm::ApplyPasses(tvm::IRModule, tvm::transform::Sequential)
+        at /opt/tvm/src/driver/driver_api.cc:289
+  0: operator()
+        at /opt/tvm/src/tir/analysis/verify_memory.cc:205
+  Did you forget to bind?
+    Variable `K_flat` is directly accessed by host memory (it is not contained in a thread environment or in the function arguments.
+    Variable `Q_flat` is directly accessed by host memory (it is not contained in a thread environment or in the function arguments.
+  File "/opt/tvm/src/tir/analysis/verify_memory.cc", line 205
+RuntimeError: Memory verification failed with the following errors:
+# from tvm.script import tir as T
+
+@T.prim_func
+def main(Q_flat: T.Buffer((128, 768), "float16"), K_flat: T.Buffer((128, 768), "float16"), V_flat: T.Buffer((128, 768), "float16"), Out: T.Buffer((12, 128, 64), "float16")):
+    T.func_attr({"target": T.target({"arch": "sm_89", "host": {"keys": ["cpu"], "kind": "llvm", "mtriple": "x86_64-pc-linux-gnu", "tag": ""}, "keys": ["cuda", "gpu"], "kind": "cuda", "max_num_threads": 1024, "max_shared_memory_per_block": 49152, "max_threads_per_block": 1024, "tag": "", "thread_warp_size": 32}), "tir.noalias": T.bool(True)})
+    QK_raw = T.allocate([196608], "float16", "global")
+    RowMax = T.allocate([1536], "float16", "global")
+    QK_raw_1 = T.Buffer((196608,), "float16", data=QK_raw)
+    for h, i, j, k1 in T.grid(12, 128, 128, 64):
+        cse_var_2: T.int32 = h * 64
+        cse_var_1: T.int32 = h * 16384 + i * 128 + j
+        if k1 == 0:
+            QK_raw_1[cse_var_1] = T.float16(0)
+        Q_flat_1 = T.Buffer((98304,), "float16", data=Q_flat.data)
+        K_flat_1 = T.Buffer((98304,), "float16", data=K_flat.data)
+        QK_raw_1[cse_var_1] = QK_raw_1[cse_var_1] + Q_flat_1[i * 768 + cse_var_2 + k1] * K_flat_1[j * 768 + cse_var_2 + k1]
+    QK_raw_2 = T.Buffer((196608,), "float16", data=QK_raw)
+    with T.launch_thread("blockIdx.z", 12) as blockIdx_z:
+        blockIdx_x = T.launch_thread("blockIdx.x", 128)
+        threadIdx_x = T.launch_thread("threadIdx.x", 128)
+        QK_raw_2[blockIdx_z * 16384 + blockIdx_x * 128 + threadIdx_x] = QK_raw_1[blockIdx_z * 16384 + blockIdx_x * 128 + threadIdx_x] * T.float16(0.125)
+    RowMax_1 = T.Buffer((1536,), "float16", data=RowMax)
+    with T.launch_thread("blockIdx.z", 12) as blockIdx_z:
+        in_thread_RowMax = T.allocate([1], "float16", "local")
+        cross_thread_RowMax = T.allocate([1], "float16", "local")
+        blockIdx_x = T.launch_thread("blockIdx.x", 128)
+        threadIdx_x = T.launch_thread("threadIdx.x", 128)
+        in_thread_RowMax_1 = T.Buffer((1,), "float16", data=in_thread_RowMax, scope="local")
+        in_thread_RowMax_1[0] = T.float16(-65504)
+        in_thread_RowMax_1[0] = T.max(in_thread_RowMax_1[0], QK_raw_2[blockIdx_z * 16384 + blockIdx_x * 128 + threadIdx_x])
+        cross_thread_RowMax_1 = T.Buffer((1,), "float16", data=cross_thread_RowMax, scope="local")
+        with T.attr(T.comm_reducer(lambda x0, y0: T.max(x0, y0), [T.float16(-65504)]), "reduce_scope", T.reinterpret("handle", T.uint64(0))):
+            T.tvm_thread_allreduce(T.uint32(1), in_thread_RowMax_1[0], T.bool(True), cross_thread_RowMax_1[0], threadIdx_x)
+        if threadIdx_x == 0:
+            RowMax_1[blockIdx_z * 128 + blockIdx_x] = cross_thread_RowMax_1[0]
+    QK_raw_3 = T.Buffer((196608,), "float16", data=QK_raw)
+    with T.launch_thread("blockIdx.z", 12) as blockIdx_z:
+        blockIdx_x = T.launch_thread("blockIdx.x", 128)
+        threadIdx_x = T.launch_thread("threadIdx.x", 128)
+        QK_raw_3[blockIdx_z * 16384 + blockIdx_x * 128 + threadIdx_x] = T.exp(QK_raw_2[blockIdx_z * 16384 + blockIdx_x * 128 + threadIdx_x] - RowMax_1[blockIdx_z * 128 + blockIdx_x])
+    RowMax_2 = T.Buffer((1536,), "float16", data=RowMax)
+    with T.launch_thread("blockIdx.z", 12) as blockIdx_z:
+        in_thread_RowSum = T.allocate([1], "float16", "local")
+        cross_thread_RowSum = T.allocate([1], "float16", "local")
+        blockIdx_x = T.launch_thread("blockIdx.x", 128)
+        threadIdx_x = T.launch_thread("threadIdx.x", 128)
+        in_thread_RowSum_1 = T.Buffer((1,), "float16", data=in_thread_RowSum, scope="local")
+        in_thread_RowSum_1[0] = T.float16(0)
+        in_thread_RowSum_1[0] = in_thread_RowSum_1[0] + QK_raw_3[blockIdx_z * 16384 + blockIdx_x * 128 + threadIdx_x]
+        cross_thread_RowSum_1 = T.Buffer((1,), "float16", data=cross_thread_RowSum, scope="local")
+        with T.attr(T.comm_reducer(lambda x0, y0: x0 + y0, [T.float16(0)]), "reduce_scope", T.reinterpret("handle", T.uint64(0))):
+            T.tvm_thread_allreduce(T.uint32(1), in_thread_RowSum_1[0], T.bool(True), cross_thread_RowSum_1[0], threadIdx_x)
+        if threadIdx_x == 0:
+            RowMax_2[blockIdx_z * 128 + blockIdx_x] = cross_thread_RowSum_1[0]
+    QK_raw_4 = T.Buffer((196608,), "float16", data=QK_raw)
+    with T.launch_thread("blockIdx.z", 12) as blockIdx_z:
+        blockIdx_x = T.launch_thread("blockIdx.x", 128)
+        threadIdx_x = T.launch_thread("threadIdx.x", 128)
+        QK_raw_4[blockIdx_z * 16384 + blockIdx_x * 128 + threadIdx_x] = QK_raw_3[blockIdx_z * 16384 + blockIdx_x * 128 + threadIdx_x] / RowMax_2[blockIdx_z * 128 + blockIdx_x]
+    blockIdx_z = T.launch_thread("blockIdx.z", 12)
+    blockIdx_x = T.launch_thread("blockIdx.x", 128)
+    threadIdx_x = T.launch_thread("threadIdx.x", 128)
+    for k2 in range(128):
+        if threadIdx_x < 64:
+            Out_1 = T.Buffer((98304,), "float16", data=Out.data)
+            if k2 == 0:
+                Out_1[blockIdx_z * 8192 + blockIdx_x * 64 + threadIdx_x] = T.float16(0)
+            V_flat_1 = T.Buffer((98304,), "float16", data=V_flat.data)
+            Out_1[blockIdx_z * 8192 + blockIdx_x * 64 + threadIdx_x] = Out_1[blockIdx_z * 8192 + blockIdx_x * 64 + threadIdx_x] + QK_raw_4[blockIdx_z * 16384 + blockIdx_x * 128 + k2] * V_flat_1[k2 * 768 + blockIdx_z * 64 + threadIdx_x]
+Task's current input(s) ["in-01KQ99FNJ84AFZFX6JP2G1EWF7:1777354659403-0"] cancelled because: Function call (map with return_exceptions=False) was cancelled due to an input failure in in-01KQ99FNFQPBQ9WCS21J6Z1N46.
+[modal-client] 2026-04-28T05:48:11+0000 Received a cancellation signal while processing input ('in-01KQ99FNJ84AFZFX6JP2G1EWF7:1777354659403-0',)
+Task's current input(s) ["in-01KQ99FNJ893FKXSYVC4EC5DNE:1777354659403-1"] cancelled because: Function call (map with return_exceptions=False) was cancelled due to an input failure in in-01KQ99FNFQPBQ9WCS21J6Z1N46.
+[modal-client] 2026-04-28T05:48:11+0000 Received a cancellation signal while processing input ('in-01KQ99FNJ893FKXSYVC4EC5DNE:1777354659403-1',)
+Task's current input(s) ["in-01KQ99FNJ8SFMB5HKS9Y6CDC37:1777354659403-2"] cancelled because: Function call (map with return_exceptions=False) was cancelled due to an input failure in in-01KQ99FNFQPBQ9WCS21J6Z1N46.
+[modal-client] 2026-04-28T05:48:11+0000 Received a cancellation signal while processing input ('in-01KQ99FNJ8SFMB5HKS9Y6CDC37:1777354659403-2',)
+Task's current input(s) ["in-01KQ99FNJ8RQG9FGH27G9RECP4:1777354659403-3"] cancelled because: Function call (map with return_exceptions=False) was cancelled due to an input failure in in-01KQ99FNFQPBQ9WCS21J6Z1N46.
+[modal-client] 2026-04-28T05:48:11+0000 Received a cancellation signal while processing input ('in-01KQ99FNJ8RQG9FGH27G9RECP4:1777354659403-3',)
+[modal-client] 2026-04-28T05:48:11+0000 Detected 17 background thread(s) [ThreadPoolExecutor-3_0, ThreadPoolExecutor-3_1, ThreadPoolExecutor-3_2, ThreadPoolExecutor-3_3, ThreadPoolExecutor-3_4, ThreadPoolExecutor-3_5, ThreadPoolExecutor-3_6, ThreadPoolExecutor-3_7, ThreadPoolExecutor-3_8, ThreadPoolExecutor-3_9, ThreadPoolExecutor-3_10, ThreadPoolExecutor-3_11, ThreadPoolExecutor-3_12, ThreadPoolExecutor-3_13, ThreadPoolExecutor-3_14, ThreadPoolExecutor-3_15, ThreadPoolExecutor-3_16] still running after container exit. This will prevent runner shutdown for up to 30 seconds.
+Exception ignored on calling ctypes callback function: <function convert_to_tvm_func.<locals>.cfun at 0x2ba7a6c27740>
+Traceback (most recent call last):
+  File "/opt/tvm/python/tvm/_ffi/_ctypes/packed_func.py", line 76, in cfun
+    def cfun(args, type_codes, num_args, ret, _):
+
+  File "/pkg/modal/_container_entrypoint.py", line 241, in _cancel_input_signal_handler
+    raise InputCancellation("Input was cancelled by user")
+modal.exception.InputCancellation: Input was cancelled by user
+terminate called without an active exception
+Runner terminated.
+Exception ignored on calling ctypes callback function: <function convert_to_tvm_func.<locals>.cfun at 0x2b69da696d40>
+Traceback (most recent call last):
+  File "/opt/tvm/python/tvm/_ffi/_ctypes/packed_func.py", line 76, in cfun
+    def cfun(args, type_codes, num_args, ret, _):
+
+  File "/pkg/modal/_container_entrypoint.py", line 241, in _cancel_input_signal_handler
+    raise InputCancellation("Input was cancelled by user")
+modal.exception.InputCancellation: Input was cancelled by user
+terminate called without an active exception
+Runner terminated.
+Exception ignored in sys.unraisablehook: <built-in function unraisablehook>
+Traceback (most recent call last):
+  File "/pkg/modal/_container_entrypoint.py", line 241, in _cancel_input_signal_handler
+    raise InputCancellation("Input was cancelled by user")
+modal.exception.InputCancellation: Input was cancelled by user
+terminate called without an active exception
+Exception ignored in sys.unraisablehook: <built-in function unraisablehook>
+Traceback (most recent call last):
+  File "/pkg/modal/_container_entrypoint.py", line 241, in _cancel_input_signal_handler
+    raise InputCancellation("Input was cancelled by user")
+modal.exception.InputCancellation: Input was cancelled by user
+terminate called without an active exception
+Runner terminated.
+Runner terminated.

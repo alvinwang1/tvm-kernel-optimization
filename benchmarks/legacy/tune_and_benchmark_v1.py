@@ -25,7 +25,7 @@ from pathlib import Path
 sys.path.append(str(Path(__file__).parent.parent))
 
 try:
-    from app import image
+    from modal_app import image
 except ModuleNotFoundError:
     image = None
 

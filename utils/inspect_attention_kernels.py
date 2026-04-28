@@ -13,7 +13,7 @@ Usage:
 import modal
 
 try:
-    from app import image
+    from modal_app import image
 except ModuleNotFoundError:
     image = None
 

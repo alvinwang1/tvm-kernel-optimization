@@ -24,11 +24,13 @@ from pathlib import Path
 sys.path.append(str(Path(__file__).parent.parent))
 
 try:
-    from app import image
+    from modal_app import image
 except ImportError:
     image = None
 
 app = modal.App("tvm-sota-benchmark")
+
+GPU_TARGET = "A100"  # Change this to switch architectures: "L40S", "A100", "H100", "A10G"
 volume = modal.Volume.from_name("tvm-tuning-results", create_if_missing=True)
 
 # ── Benchmark Parameters ──────────────────────────────────────────────────────
@@ -55,7 +57,7 @@ def time_fn(fn, iters=100, warmup=20):
 # ── Modal Function ────────────────────────────────────────────────────────────
 @app.function(
     image=image,
-    gpu="L40S",
+    gpu=GPU_TARGET,
     volumes={"/tuning_results": volume},
     timeout=3600,
 )
@@ -184,14 +186,14 @@ def run_benchmark():
     ax.bar(x + 1.5*width, df['flash_ms'], width, label='FlashAttention-2 (SOTA)')
     
     ax.set_ylabel('Latency (ms)')
-    ax.set_title('Attention Latency comparison (L40S, FP16)')
+    ax.set_title(f'Attention Latency comparison ({GPU_TARGET}, FP16)')
     ax.set_xticks(x)
     ax.set_xticklabels(df['workload'])
     ax.legend()
     ax.set_yscale('log')
     plt.grid(True, which="both", ls="-", alpha=0.2)
     
-    plot_path = "/tuning_results/sota_comparison.png"
+    plot_path = f"/tuning_results/sota_comparison_{GPU_TARGET}.png"
     plt.savefig(plot_path)
     print(f"\nPlot saved to {plot_path}")
     
@@ -200,6 +202,7 @@ def run_benchmark():
 @app.local_entrypoint()
 def main():
     results = run_benchmark.remote()
-    out_path = Path(__file__).parent.parent / "results" / "sota_benchmark_final.json"
+    out_path = Path(__file__).parent.parent / "results" / f"sota_benchmark_{GPU_TARGET}.json"
     with open(out_path, "w") as f:
         json.dump(results, f, indent=2)
+    print(f"Results saved to {out_path}")

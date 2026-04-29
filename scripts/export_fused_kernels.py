@@ -1,7 +1,9 @@
 import os
 import modal
+import re
+import shutil
 
-app = modal.App("tvm-export-kernels")
+app = modal.App("tvm-export-kernels-v6")
 volume = modal.Volume.from_name("tvm-tuning-results")
 
 import sys
@@ -12,132 +14,99 @@ try:
 except ModuleNotFoundError:
     image = None
 
-def make_attn_body_mod(S, H, D, inv_scale):
-    import tvm
-    import tvm.te as te
-    
-    Q_flat = te.placeholder((S, H * D), name="Q_flat", dtype="float16")
-    K_flat = te.placeholder((S, H * D), name="K_flat", dtype="float16")
-    V_flat = te.placeholder((S, H * D), name="V_flat", dtype="float16")
-    Out_ph = te.placeholder((H, S, D), name="Out_ph", dtype="float16")
-
-    inv_sc = tvm.tir.const(inv_scale, "float32")
-
-    k1 = te.reduce_axis((0, D), "k1")
-    QK_raw = te.compute(
-        (H, S, S),
-        lambda h, i, j: te.sum(
-            Q_flat[i, h * D + k1].astype("float32") * K_flat[j, h * D + k1].astype("float32"),
-            axis=k1,
-        ),
-        name="QK_raw",
-    )
-    QK = te.compute((H, S, S), lambda h, i, j: QK_raw[h, i, j] * inv_sc, name="QK")
-
-    m_ax = te.reduce_axis((0, S), "m_ax")
-    RowMax = te.compute((H, S), lambda h, i: te.max(QK[h, i, m_ax], axis=m_ax), name="RowMax")
-
-    Exp = te.compute((H, S, S), lambda h, i, j: tvm.te.exp(QK[h, i, j] - RowMax[h, i]), name="Exp")
-    s_ax = te.reduce_axis((0, S), "s_ax")
-    RowSum = te.compute((H, S), lambda h, i: te.sum(Exp[h, i, s_ax], axis=s_ax), name="RowSum")
-
-    Attn = te.compute((H, S, S), lambda h, i, j: Exp[h, i, j] / RowSum[h, i], name="Attn")
-
-    k2 = te.reduce_axis((0, S), "k2")
-    Out = te.compute(
-        (H, S, D),
-        lambda h, i, d: te.sum(Attn[h, i, k2] * V_flat[k2, h * D + d].astype("float32"), axis=k2).astype("float16"),
-        name="Out",
-    )
-    func = te.create_prim_func([Q_flat, K_flat, V_flat, Out])
-    return tvm.IRModule({"main": func})
-
-
 @app.function(image=image, volumes={"/tuning_results": volume}, timeout=3600, gpu="T4")
-def export_kernels_from_modal():
+def export_kernels_to_volume():
     import tvm
     from tvm import meta_schedule as ms
-    import glob
+    import tvm.contrib.nvcc  # noqa
+    try:
+        from tvm.tir.tensor_intrin import cuda as _  # noqa
+    except ImportError:
+        pass
     
-    results = {}
-    arch = "sm_89"
-    target = tvm.target.Target(
-        f"cuda -arch={arch}"
-        f" -max_num_threads=1024"
-        f" -max_threads_per_block=1024"
-        f" -max_shared_memory_per_block=49152"
-    )
-
-    # Search for all fused attention directories
-    # They look like /tuning_results/attn_v*_attn_body_fused_*
     base_dir = "/tuning_results"
+    out_dir = "/tuning_results/exported_kernels"
+    
+    # Clear previous exports
+    if os.path.exists(out_dir):
+        shutil.rmtree(out_dir)
+    os.makedirs(out_dir, exist_ok=True)
     
     if not os.path.exists(base_dir):
-        return results
+        print(f"Error: {base_dir} does not exist.")
+        return
 
     work_dirs = []
     for d in os.listdir(base_dir):
-        if "attn_body_fused" in d:
-            work_dirs.append(os.path.join(base_dir, d))
+        path = os.path.join(base_dir, d)
+        if os.path.isdir(path) and os.path.exists(os.path.join(path, "database_tuning_record.json")):
+            if "_v6_" in d or "_v4_" in d:
+                work_dirs.append(path)
             
+    if not work_dirs:
+        print("No v4/v6 tuning databases found in volume.")
+        return
+
+    print(f"Found {len(work_dirs)} databases. Starting export...")
+
     for work_dir in work_dirs:
         tag = os.path.basename(work_dir)
         tuning_record = f"{work_dir}/database_tuning_record.json"
         
-        if not os.path.exists(tuning_record) or os.path.getsize(tuning_record) == 0:
-            print(f"Skipping {tag}: DB does not exist or is empty.")
+        if os.path.getsize(tuning_record) == 0:
             continue
             
-        print(f"Exporting {tag} from DB...")
+        arch_match = re.search(r"sm_(\d+)", tag)
+        arch = arch_match.group(0) if arch_match else "sm_89"
+        
+        target = tvm.target.Target(f"cuda -arch={arch}")
+
         try:
             database = ms.database.JSONDatabase(work_dir=work_dir)
-            workloads = database.get_all_workloads()
-            if not workloads:
-                print(f"  No workloads found in {tag}")
+            records = database.get_all_tuning_records()
+            if not records:
                 continue
                 
-            # Usually just one workload per fused kernel DB
-            for idx, wl in enumerate(workloads):
-                records = database.get_top_k(wl, 1)
-                if not records:
-                    print(f"  No valid tuning records for workload {idx} in {tag}")
-                    continue
-                    
-                best_record = records[0]
-                
-                # Apply the best trace to the workload's original mod
+            workload_to_best_record = {}
+            for record in records:
+                wl = record.workload
+                avg_time = sum(record.run_secs) / len(record.run_secs) if record.run_secs else float('inf')
+                if wl not in workload_to_best_record or avg_time < workload_to_best_record[wl][0]:
+                    workload_to_best_record[wl] = (avg_time, record)
+            
+            for idx, (wl, (avg_time, best_record)) in enumerate(workload_to_best_record.items()):
                 sch = tvm.tir.Schedule(wl.mod)
                 best_record.trace.apply_to_schedule(sch, remove_postproc=False)
-                
                 with tvm.transform.PassContext(opt_level=3):
                     lib = tvm.build(sch.mod, target=target)
                 
-                cuda_source = lib.imported_modules[0].get_source()
+                cuda_source = str(lib.imported_modules[0].get_source())
                 
-                # If there are multiple workloads, suffix the tag
-                res_tag = tag if len(workloads) == 1 else f"{tag}_wl{idx}"
-                results[res_tag] = cuda_source
-                print(f"  Successfully extracted {res_tag}")
+                # Determine category
+                if "attn_body_fused" in tag: category = "fused_v4"
+                elif "qk_gemm_v6" in tag: category = "fused_v6_qk"
+                elif "softmax_av_v6" in tag: category = "fused_v6_sav"
+                elif any(x in tag for x in ["Q_proj", "K_proj", "V_proj"]): category = "gemm_qkv"
+                elif any(x in tag for x in ["QK_dot", "AV_sum"]): category = "gemm_attn"
+                else: category = "misc"
+                
+                res_tag = tag if len(workload_to_best_record) == 1 else f"{tag}_wl{idx}"
+                dest_dir = os.path.join(out_dir, category)
+                os.makedirs(dest_dir, exist_ok=True)
+                
+                with open(os.path.join(dest_dir, f"{res_tag}.cu"), "w") as f:
+                    f.write(cuda_source)
+                print(f"  Exported {res_tag} to volume")
                 
         except Exception as e:
             print(f"Error processing {tag}: {e}")
             
-    return results
+    volume.commit()
+    print("Export complete. Committed to volume.")
 
 @app.local_entrypoint()
 def main():
-    print("Fetching tuned kernels from Modal...")
-    kernels = export_kernels_from_modal.remote()
-    
-    if not kernels:
-        print("No tuned kernels found or tuning is not yet complete.")
-        return
-        
-    out_dir = os.path.join(os.path.dirname(__file__), "kernels", "fused")
-    os.makedirs(out_dir, exist_ok=True)
-    
-    for tag, source in kernels.items():
-        out_path = os.path.join(out_dir, f"{tag}.cu")
-        with open(out_path, "w") as f:
-            f.write(source)
-        print(f"Saved: {out_path}")
+    export_kernels_to_volume.remote()
+    print("\nKernels have been exported to the Modal volume.")
+    print("To pull them to your local machine, run:")
+    print("modal volume get tvm-tuning-results exported_kernels scripts/kernels")

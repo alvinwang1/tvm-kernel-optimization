@@ -820,7 +820,7 @@ def main(
         print("  TVM/PT  >1 means TVM fused is SLOWER than PT SDPA.")
         print("  Pipe/Fused >1 means TVM fused is FASTER than the TVM component pipeline.")
 
-    out_path = Path(__file__).parent.parent / "results" / "attention_results_v6.json"
+    out_path = Path(__file__).parent.parent / "results" / f"attention_results_v6_{gpu_type}.json"
     out_path.parent.mkdir(parents=True, exist_ok=True)
 
     if pytorch_only:

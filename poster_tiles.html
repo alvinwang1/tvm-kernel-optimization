@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Poster Print Tiles (8 × Letter Portrait)</title>
+  <style>
+    /*
+      LAYOUT
+      ──────
+      Poster: 60 × 40 in (landscape)
+      Scale:  0.55  →  scaled = 33 × 22 in
+      Grid:   4 cols × 2 rows of portrait letter (8.5 × 11 in each)
+      Total:  34 × 22 in  (tiny ~1in right margin — expected)
+
+      Assembly order (print order):
+        A1  A2  A3  A4   ← top half
+        B1  B2  B3  B4   ← bottom half
+    */
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    @page { size: 8.5in 11in; margin: 0; }
+
+    body { background: #fff; }
+
+    .tile {
+      width: 8.5in;
+      height: 11in;
+      overflow: hidden;
+      position: relative;
+      page-break-after: always;
+      break-after: page;
+    }
+    .tile:last-child {
+      page-break-after: avoid;
+      break-after: avoid;
+    }
+
+    /*
+      The iframe renders the full 60×40" poster.
+      scale(0.55) shrinks it to 33×22".
+
+      Column offsets (8.5in each in scaled space):
+        col0 → left: 0
+        col1 → left: -8.5in
+        col2 → left: -17in
+        col3 → left: -25.5in
+      Row offsets (11in each in scaled space):
+        row0 → top: 0
+        row1 → top: -11in
+    */
+    iframe.poster {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 60in;
+      height: 40in;
+      border: none;
+      transform: scale(0.55);
+      transform-origin: top left;
+      pointer-events: none;
+    }
+
+    .c1 iframe.poster { left:  -8.5in; }
+    .c2 iframe.poster { left:  -17in;  }
+    .c3 iframe.poster { left:  -25.5in;}
+
+    .r1 iframe.poster { top:   -11in; }
+
+    .label {
+      position: absolute;
+      bottom: 0.09in;
+      right:  0.09in;
+      font-family: Arial, sans-serif;
+      font-size: 7pt;
+      color: #aaa;
+      z-index: 9999;
+      pointer-events: none;
+      user-select: none;
+    }
+    .mark-h {
+      position: absolute;
+      bottom: 0; left: 0; right: 0;
+      height: 1px;
+      background: rgba(0,0,0,0.15);
+      z-index: 9998;
+    }
+    .mark-v {
+      position: absolute;
+      top: 0; right: 0; bottom: 0;
+      width: 1px;
+      background: rgba(0,0,0,0.15);
+      z-index: 9998;
+    }
+    .r1 .mark-h { display: none; }
+    .c3 .mark-v { display: none; }
+  </style>
+</head>
+<body>
+
+  <!-- ══ ROW A (top half) ══ -->
+  <div class="tile r0 c0">
+    <iframe class="poster" src="poster.html" scrolling="no" loading="eager"></iframe>
+    <div class="mark-h"></div><div class="mark-v"></div>
+    <div class="label">A1 — top-left</div>
+  </div>
+  <div class="tile r0 c1">
+    <iframe class="poster" src="poster.html" scrolling="no" loading="eager"></iframe>
+    <div class="mark-h"></div><div class="mark-v"></div>
+    <div class="label">A2 — top 2nd</div>
+  </div>
+  <div class="tile r0 c2">
+    <iframe class="poster" src="poster.html" scrolling="no" loading="eager"></iframe>
+    <div class="mark-h"></div><div class="mark-v"></div>
+    <div class="label">A3 — top 3rd</div>
+  </div>
+  <div class="tile r0 c3">
+    <iframe class="poster" src="poster.html" scrolling="no" loading="eager"></iframe>
+    <div class="mark-h"></div>
+    <div class="label">A4 — top-right</div>
+  </div>
+
+  <!-- ══ ROW B (bottom half) ══ -->
+  <div class="tile r1 c0">
+    <iframe class="poster" src="poster.html" scrolling="no" loading="eager"></iframe>
+    <div class="mark-v"></div>
+    <div class="label">B1 — bottom-left</div>
+  </div>
+  <div class="tile r1 c1">
+    <iframe class="poster" src="poster.html" scrolling="no" loading="eager"></iframe>
+    <div class="mark-v"></div>
+    <div class="label">B2 — bottom 2nd</div>
+  </div>
+  <div class="tile r1 c2">
+    <iframe class="poster" src="poster.html" scrolling="no" loading="eager"></iframe>
+    <div class="mark-v"></div>
+    <div class="label">B3 — bottom 3rd</div>
+  </div>
+  <div class="tile r1 c3">
+    <iframe class="poster" src="poster.html" scrolling="no" loading="eager"></iframe>
+    <div class="label">B4 — bottom-right</div>
+  </div>
+
+</body>
+</html>

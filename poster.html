@@ -7,25 +7,25 @@
   PRINT INSTRUCTIONS
   ==================
   Open in Google Chrome → File → Print → "Save as PDF"
-  Set paper size to "Custom" → 40 in × 60 in (or 101.6 cm × 152.4 cm)
+  Set paper size to "Custom" → 60 in × 40 in (or 152.4 cm × 101.6 cm)
   Set margins to "None"  |  Scale: 100%
 -->
 <style>
 /* ═══════════════════════════════════════════════════
-   PRINT PAGE SETUP – 40 × 60 inches portrait
+   PRINT PAGE SETUP – 60 × 40 inches landscape
    ═══════════════════════════════════════════════════ */
 @page {
-  size: 40in 60in;
+  size: 60in 40in;
   margin: 0;
 }
 @media print {
   @page {
-    size: 40in 60in;
+    size: 60in 40in;
     margin: 0;
   }
   body {
-    width: 40in;
-    height: 60in;
+    width: 60in;
+    height: 40in;
     margin: 0;
     padding: 0;
   }
@@ -34,8 +34,8 @@
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 body {
-  width: 40in;
-  min-height: 60in;
+  width: 60in;
+  min-height: 40in;
   background: #E8EEF6;
   font-family: 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
   color: #1A202C;
@@ -45,19 +45,19 @@ body {
 }
 
 /* ═══════════════════════════════════════════════════
-   MASTER GRID
-   Rows: 6.0 + 10.0 + 12.4 + 13.2 + 10.0 + 7.0 = 58.6in
-   Padding 0.25in top+bottom = 0.5in
-   Gaps 5 × 0.15in = 0.75in
-   Total ≈ 59.85in ≈ 60in ✓
+   MASTER GRID — LANDSCAPE 60 × 40 in
+   Header: 3.8in  |  Content body: fills remainder
+   Padding 0.25in t/b, 0.3in l/r  |  Gap: 0.15in
+   Total: 3.8 + 0.15 + 35.3 + 0.5 = 39.75 ≈ 40in ✓
    ═══════════════════════════════════════════════════ */
 .poster {
-  width: 40in;
-  min-height: 60in;
+  width: 60in;
+  min-height: 40in;
   display: grid;
-  grid-template-rows: 6.0in 7.5in 13.5in 18.5in 13.5in 9.5in;
+  grid-template-rows: 3.8in auto;
   padding: 0.25in 0.3in;
   gap: 0.15in;
+  box-sizing: border-box;
 }
 
 /* ═══  HEADER  ═══ */
@@ -72,15 +72,15 @@ body {
   gap: 0.35in;
 }
 .header h1 {
-  font-size: 62pt;
+  font-size: 50pt;
   font-weight: 800;
   line-height: 1.08;
   letter-spacing: -0.5pt;
   margin-bottom: 0.1in;
 }
-.h-subtitle { font-size: 26pt; opacity: 0.82; margin-bottom: 0.1in; line-height: 1.3; }
-.h-authors  { font-size: 32pt; font-weight: 700; margin-bottom: 0.06in; }
-.h-course   { font-size: 22pt; opacity: 0.78; }
+.h-subtitle { font-size: 22pt; opacity: 0.82; margin-bottom: 0.06in; line-height: 1.3; }
+.h-authors  { font-size: 26pt; font-weight: 700; margin-bottom: 0.04in; }
+.h-course   { font-size: 19pt; opacity: 0.78; }
 .hw-badge {
   background: rgba(255,255,255,0.12);
   border: 2pt solid rgba(255,255,255,0.28);
@@ -109,6 +109,29 @@ body {
 .cols-3 { grid-template-columns: 1fr 1fr 1fr; }
 .cols-2-1 { grid-template-columns: 2fr 1fr; }
 .cols-3-2 { grid-template-columns: 3fr 2fr; }
+.body-grid {
+  display: grid;
+  grid-template-columns: 1fr 1.4fr 1fr;
+  gap: 0.15in;
+  min-height: 35in;
+}
+.body-col {
+  display: flex;
+  flex-direction: column;
+  gap: 0.13in;
+}
+.body-col .card { }
+/* intro column: 3 equal cards */
+.col-intro .card { flex: 1; }
+/* charts column */
+.col-charts .card:nth-child(1) { flex: 0.7; }   /* pipeline */
+.col-charts .card:nth-child(2) { flex: 1.45; }  /* speedup */
+.col-charts .card:nth-child(3) { flex: 1; }     /* sdpa gap */
+/* analysis column */
+.col-analysis .card:nth-child(1) { flex: 1.8; } /* kernel deep-dive */
+.col-analysis .card:nth-child(2) { flex: 1.5; } /* key findings */
+.col-analysis .footer-card { flex: 0.65; }
+
 .cols-1 { grid-template-columns: 1fr; }
 
 /* ═══  CARDS  ═══ */
@@ -119,7 +142,6 @@ body {
   box-shadow: 0 3pt 12pt rgba(0,0,0,0.09);
   display: flex;
   flex-direction: column;
-  overflow: hidden;
   align-content: start;
 }
 .card-title {
@@ -221,16 +243,16 @@ body {
 .dtable th {
   background: #1E3A6E;
   color: white;
-  padding: 0.11in 0.1in;
-  font-size: 20pt;
+  padding: 0.16in 0.14in;
+  font-size: 25pt;
   font-weight: 700;
   text-align: center;
 }
 .dtable td {
-  padding: 0.11in 0.1in;
+  padding: 0.15in 0.14in;
   text-align: center;
   border-bottom: 1pt solid #E2E8F0;
-  font-size: 19pt;
+  font-size: 24pt;
 }
 .dtable tr:nth-child(even) td { background: #F7FAFC; }
 .win  { color: #065F46; font-weight: 800; }
@@ -321,27 +343,31 @@ svg text { font-family: 'Segoe UI', 'Helvetica Neue', Arial, sans-serif; }
   </div>
 </div>
 
-<!-- ════════════════════════════════════
-     ROW 1 – Motivation | Overview | Design
-     ════════════════════════════════════ -->
-<div class="row cols-3">
 
-  <div class="card">
+<!-- ════════════════════════════════════
+     LANDSCAPE BODY — 3 columns
+     Col 1: Intro  |  Col 2: Charts  |  Col 3: Analysis
+     ════════════════════════════════════ -->
+<div class="body-grid">
+
+  <!-- ── COLUMN 1: Introduction ── -->
+  <div class="body-col col-intro">
+<div class="card">
     <div class="card-title">Motivation</div>
-    <p>Transformer attention is the dominant compute bottleneck in modern LLMs. Efficient kernels for its three sub-operations — <strong>QKV projection</strong>, <strong>QK dot product</strong>, and <strong>attention-value (AV) sum</strong> — directly determine end-to-end inference latency at every scale.</p>
-    <div class="hbox" style="margin-top:0.08in">
+    <p style="font-size:27pt">Transformer attention is the dominant compute bottleneck in modern LLMs. Efficient kernels for its three sub-operations — <strong>QKV projection</strong>, <strong>QK dot product</strong>, and <strong>attention-value (AV) sum</strong> — directly determine end-to-end inference latency at every scale.</p>
+    <div class="hbox" style="margin-top:0.12in;font-size:26pt">
       <strong>Research question:</strong> Can TVM MetaSchedule auto-tune Tensor Core WMMA kernels that match or exceed hand-optimized cuBLAS on an NVIDIA L40S?
     </div>
-    <p style="margin-top:0.09in">This project performs <strong>operation-level isolation</strong> — measuring each attention component separately — and goes beyond black-box timing to <strong>analyze generated CUDA kernel assembly</strong> and explain performance gaps mechanistically via inspection of <code>cp.async</code>, WMMA fragment counts, and thread-block sizing.</p>
-    <div class="hbox green" style="margin-top:0.08in">
+    <p style="margin-top:0.13in;font-size:27pt">This project performs <strong>operation-level isolation</strong> — measuring each attention component separately — and goes beyond black-box timing to <strong>analyze generated CUDA kernel assembly</strong> and explain performance gaps mechanistically via inspection of <code>cp.async</code>, WMMA fragment counts, and thread-block sizing.</p>
+    <div class="hbox green" style="margin-top:0.12in;font-size:26pt">
       <strong>Key innovation:</strong> A single shared projection kernel is tuned once for Q, K, and V — reusing one compiled artifact for all three projections rather than redundantly tuning three near-identical GEMMs.
     </div>
   </div>
 
   <div class="card">
     <div class="card-title">System Overview</div>
-    <p>Five workload configurations spanning BERT and Llama model families:</p>
-    <table class="dtable" style="margin-top:0.07in">
+    <p style="font-size:27pt">Five workload configurations spanning BERT and Llama model families:</p>
+    <table class="dtable" style="margin-top:0.1in">
       <thead>
         <tr><th>Model</th><th>seq_len</th><th>hidden_dim</th><th>num_heads</th><th>head_dim</th></tr>
       </thead>
@@ -353,16 +379,16 @@ svg text { font-family: 'Segoe UI', 'Helvetica Neue', Arial, sans-serif; }
         <tr><td>Llama</td><td>2048</td><td>4096</td><td>32</td><td>128</td></tr>
       </tbody>
     </table>
-    <p style="margin-top:0.1in"><strong>TVM tuning:</strong> 800 MetaSchedule trials per kernel, generating 15 CUDA kernels total ({QKV proj · QK dot · AV sum} × 5 shapes). All kernels use <code>nvcuda::wmma</code> 16×16×16 FP16 fragments on Tensor Cores.</p>
-    <div class="hbox" style="margin-top:0.08in">
+    <p style="margin-top:0.14in;font-size:27pt"><strong>TVM tuning:</strong> 800 MetaSchedule trials per kernel, generating 15 CUDA kernels total ({QKV proj · QK dot · AV sum} × 5 shapes). All kernels use <code>nvcuda::wmma</code> 16×16×16 FP16 fragments on Tensor Cores.</p>
+    <div class="hbox" style="margin-top:0.12in;font-size:26pt">
       <strong>Timing:</strong> 200 timed iterations · 20 warmup iters · wall-clock synchronised via <code>cuda.synchronize()</code> · all on NVIDIA L40S (Modal cloud)
     </div>
   </div>
 
   <div class="card">
     <div class="card-title">Benchmark Design</div>
-    <p>Three sub-operations measured <strong>in isolation</strong> for apples-to-apples comparison — each pinning one attention component at a time:</p>
-    <table class="dtable" style="margin-top:0.07in">
+    <p style="font-size:27pt">Three sub-operations measured <strong>in isolation</strong> for apples-to-apples comparison — each pinning one attention component at a time:</p>
+    <table class="dtable" style="margin-top:0.1in">
       <thead>
         <tr><th>Operation</th><th>PyTorch backend</th><th>TVM backend</th></tr>
       </thead>
@@ -374,18 +400,16 @@ svg text { font-family: 'Segoe UI', 'Helvetica Neue', Arial, sans-serif; }
         <tr><td><strong>SDPA</strong></td><td>Flash Attention v2 (reference)</td><td>— N/A —</td></tr>
       </tbody>
     </table>
-    <p style="margin-top:0.1in">Both PyTorch <em>batched</em> (optimal) and <em>per-head loop</em> (matched to TVM's execution style) paths are measured. TVM is compared against the <strong>matched loop path</strong> for fair head-level granularity comparison.</p>
-    <div class="hbox orange" style="margin-top:0.08in">
+    <p style="margin-top:0.14in;font-size:27pt">Both PyTorch <em>batched</em> (optimal) and <em>per-head loop</em> (matched to TVM's execution style) paths are measured. TVM is compared against the <strong>matched loop path</strong> for fair head-level granularity comparison.</p>
+    <div class="hbox orange" style="margin-top:0.12in;font-size:26pt">
       <strong>v2 fix:</strong> SDPA uses <code>[1, seq, heads, head_dim]</code> layout + <code>.contiguous()</code> to trigger Flash Attention fast-path — preventing a 3–10× slower fallback to unfused math reference.
     </div>
   </div>
 
-</div><!-- /row 1 -->
+  </div><!-- /col-intro -->
 
-<!-- ════════════════════════════════════
-     ROW 2 – Pipeline Latency Chart (full width)
-     ════════════════════════════════════ -->
-<div class="row cols-1">
+  <!-- ── COLUMN 2: Charts & Results ── -->
+  <div class="body-col col-charts">
 <div class="card">
   <div class="card-title">Full Pipeline Latency — PyTorch Loop vs TVM vs Flash Attention (SDPA)</div>
   <!--
@@ -505,14 +529,8 @@ svg text { font-family: 'Segoe UI', 'Helvetica Neue', Arial, sans-serif; }
     <text x="755" y="509" font-size="17" fill="#374151">PyTorch SDPA (Flash Attention v2)</text>
   </svg>
 </div>
-</div><!-- /row 2 -->
 
-<!-- ════════════════════════════════════
-     ROW 3 – Speedup Chart + SDPA Gap Table
-     ════════════════════════════════════ -->
-<div class="row cols-3-2">
-
-  <div class="card">
+<div class="card">
     <div class="card-title">Speedup Ratio by Operation &nbsp;(PT latency ÷ TVM latency — above 1.0× = TVM wins)</div>
     <!--
       Speedup chart
@@ -630,8 +648,7 @@ svg text { font-family: 'Segoe UI', 'Helvetica Neue', Arial, sans-serif; }
     </svg>
   </div>
 
-  <!-- SDPA Gap + Speedup Table -->
-  <div class="card">
+<div class="card">
     <div class="card-title">Speedup Summary &amp; SDPA Gap</div>
     <p style="font-size:22pt;color:#64748B;margin-bottom:0.1in">All ratios = PT latency ÷ TVM latency. <span style="color:#065F46;font-weight:700">Green</span> = TVM faster · <span style="color:#991B1B;font-weight:700">Red</span> = TVM slower</p>
 
@@ -672,14 +689,11 @@ svg text { font-family: 'Segoe UI', 'Helvetica Neue', Arial, sans-serif; }
     </div>
   </div>
 
-</div><!-- /row 3 -->
+  </div><!-- /col-charts -->
 
-<!-- ════════════════════════════════════
-     ROW 4 – Kernel Analysis | Key Findings
-     ════════════════════════════════════ -->
-<div class="row cols-3-2">
-
-  <div class="card">
+  <!-- ── COLUMN 3: Analysis ── -->
+  <div class="body-col col-analysis">
+<div class="card">
     <div class="card-title">Kernel Implementation Deep-Dive</div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.22in;flex:1">
 
@@ -740,7 +754,7 @@ svg text { font-family: 'Segoe UI', 'Helvetica Neue', Arial, sans-serif; }
     </div>
   </div>
 
-  <div class="card">
+<div class="card">
     <div class="card-title">Key Findings</div>
 
     <p style="font-size:25pt;font-weight:800;color:#059669;margin-bottom:0.08in">Where TVM MetaSchedule Wins</p>
@@ -764,11 +778,6 @@ svg text { font-family: 'Segoe UI', 'Helvetica Neue', Arial, sans-serif; }
     </div>
   </div>
 
-</div><!-- /row 4 -->
-
-<!-- ════════════════════════════════════
-     ROW 5 – Conclusions
-     ════════════════════════════════════ -->
 <div class="footer-card">
   <div class="card-title">Conclusions &amp; Future Work</div>
   <div class="concl-grid">
@@ -790,6 +799,8 @@ svg text { font-family: 'Segoe UI', 'Helvetica Neue', Arial, sans-serif; }
   </div>
 </div>
 
+  </div><!-- /col-analysis -->
+
+</div><!-- /body-grid -->
+
 </div><!-- /poster -->
-</body>
-</html>

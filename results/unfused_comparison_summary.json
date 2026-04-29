@@ -1,0 +1,72 @@
+[
+  {
+    "gpu": "H100",
+    "workload": "BERT-128",
+    "pytorch_eager_ms": 0.08100588000161224,
+    "tvm_component_pipeline_ms": 0.33315120001134346,
+    "speedup_tvm_vs_pt": 0.24315049742835707
+  },
+  {
+    "gpu": "H100",
+    "workload": "BERT-512",
+    "pytorch_eager_ms": 0.07541856499301502,
+    "tvm_component_pipeline_ms": 0.2930734100027621,
+    "speedup_tvm_vs_pt": 0.2573367709895764
+  },
+  {
+    "gpu": "H100",
+    "workload": "Llama-128",
+    "pytorch_eager_ms": 0.08016563000637689,
+    "tvm_component_pipeline_ms": 0.7562861400219845,
+    "speedup_tvm_vs_pt": 0.10599907331905693
+  },
+  {
+    "gpu": "H100",
+    "workload": "Llama-512",
+    "pytorch_eager_ms": 0.13524746500479523,
+    "tvm_component_pipeline_ms": 1.0494193650083616,
+    "speedup_tvm_vs_pt": 0.12887837742894862
+  },
+  {
+    "gpu": "H100",
+    "workload": "Llama-2048",
+    "pytorch_eager_ms": 1.1087289600072836,
+    "tvm_component_pipeline_ms": 2.2690174600029422,
+    "speedup_tvm_vs_pt": 0.4886383553901105
+  },
+  {
+    "gpu": "L40S",
+    "workload": "BERT-128",
+    "pytorch_eager_ms": 0.05035710000001359,
+    "tvm_component_pipeline_ms": 0.21965999500000777,
+    "speedup_tvm_vs_pt": 0.22925021008041
+  },
+  {
+    "gpu": "L40S",
+    "workload": "BERT-512",
+    "pytorch_eager_ms": 0.0498065849999918,
+    "tvm_component_pipeline_ms": 0.3163183350000054,
+    "speedup_tvm_vs_pt": 0.15745715467296878
+  },
+  {
+    "gpu": "L40S",
+    "workload": "Llama-128",
+    "pytorch_eager_ms": 0.13729447500001157,
+    "tvm_component_pipeline_ms": 0.6798214899999877,
+    "speedup_tvm_vs_pt": 0.20195665629813211
+  },
+  {
+    "gpu": "L40S",
+    "workload": "Llama-512",
+    "pytorch_eager_ms": 0.3207717400000121,
+    "tvm_component_pipeline_ms": 1.4789372949999802,
+    "speedup_tvm_vs_pt": 0.21689340114992256
+  },
+  {
+    "gpu": "L40S",
+    "workload": "Llama-2048",
+    "pytorch_eager_ms": 3.510081174999975,
+    "tvm_component_pipeline_ms": 17.109115844999998,
+    "speedup_tvm_vs_pt": 0.205158536934319
+  }
+]

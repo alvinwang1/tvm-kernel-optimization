@@ -1,0 +1,139 @@
+{
+  "benchmarks": [
+    {
+      "architecture": "L40S (sm_89)",
+      "workload": "BERT-128",
+      "pytorch_sdpa_ms": 0.0122,
+      "triton_hand_tuned_ms": 0.0274,
+      "tvm_v6_fused_ms": 0.0742,
+      "triton_vs_sdpa": "0.45x",
+      "tvm_vs_sdpa": "0.16x"
+    },
+    {
+      "architecture": "L40S (sm_89)",
+      "workload": "BERT-512",
+      "pytorch_sdpa_ms": 0.0151,
+      "triton_hand_tuned_ms": 0.0250,
+      "tvm_v6_fused_ms": 0.0829,
+      "triton_vs_sdpa": "0.60x",
+      "tvm_vs_sdpa": "0.18x"
+    },
+    {
+      "architecture": "L40S (sm_89)",
+      "workload": "Llama-128",
+      "pytorch_sdpa_ms": 0.0101,
+      "triton_hand_tuned_ms": 0.0249,
+      "tvm_v6_fused_ms": 0.0677,
+      "triton_vs_sdpa": "0.41x",
+      "tvm_vs_sdpa": "0.15x"
+    },
+    {
+      "architecture": "L40S (sm_89)",
+      "workload": "Llama-512",
+      "pytorch_sdpa_ms": 0.0239,
+      "triton_hand_tuned_ms": 0.0257,
+      "tvm_v6_fused_ms": 0.1914,
+      "triton_vs_sdpa": "0.93x",
+      "tvm_vs_sdpa": "0.12x"
+    },
+    {
+      "architecture": "L40S (sm_89)",
+      "workload": "Llama-2048",
+      "pytorch_sdpa_ms": 0.3125,
+      "triton_hand_tuned_ms": 0.3507,
+      "tvm_v6_fused_ms": 4.9113,
+      "triton_vs_sdpa": "0.89x",
+      "tvm_vs_sdpa": "0.06x"
+    },
+    {
+      "architecture": "A100 (sm_80)",
+      "workload": "BERT-128",
+      "pytorch_sdpa_ms": 0.0239,
+      "triton_hand_tuned_ms": 0.0635,
+      "tvm_v6_fused_ms": 0.1608,
+      "triton_vs_sdpa": "0.38x",
+      "tvm_vs_sdpa": "0.15x"
+    },
+    {
+      "architecture": "A100 (sm_80)",
+      "workload": "BERT-512",
+      "pytorch_sdpa_ms": 0.0359,
+      "triton_hand_tuned_ms": 0.0626,
+      "tvm_v6_fused_ms": 0.1625,
+      "triton_vs_sdpa": "0.57x",
+      "tvm_vs_sdpa": "0.22x"
+    },
+    {
+      "architecture": "A100 (sm_80)",
+      "workload": "Llama-128",
+      "pytorch_sdpa_ms": 0.0254,
+      "triton_hand_tuned_ms": 0.0644,
+      "tvm_v6_fused_ms": 0.1643,
+      "triton_vs_sdpa": "0.39x",
+      "tvm_vs_sdpa": "0.15x"
+    },
+    {
+      "architecture": "A100 (sm_80)",
+      "workload": "Llama-512",
+      "pytorch_sdpa_ms": 0.0556,
+      "triton_hand_tuned_ms": 0.0703,
+      "tvm_v6_fused_ms": 0.5399,
+      "triton_vs_sdpa": "0.79x",
+      "tvm_vs_sdpa": "0.10x"
+    },
+    {
+      "architecture": "A100 (sm_80)",
+      "workload": "Llama-2048",
+      "pytorch_sdpa_ms": 0.4446,
+      "triton_hand_tuned_ms": 0.5212,
+      "tvm_v6_fused_ms": 6.9644,
+      "triton_vs_sdpa": "0.85x",
+      "tvm_vs_sdpa": "0.06x"
+    },
+    {
+      "architecture": "H100 (sm_90)",
+      "workload": "BERT-128",
+      "pytorch_sdpa_ms": 0.0146,
+      "triton_hand_tuned_ms": 0.0357,
+      "tvm_v6_fused_ms": 0.0986,
+      "triton_vs_sdpa": "0.41x",
+      "tvm_vs_sdpa": "0.15x"
+    },
+    {
+      "architecture": "H100 (sm_90)",
+      "workload": "BERT-512",
+      "pytorch_sdpa_ms": 0.0237,
+      "triton_hand_tuned_ms": 0.0362,
+      "tvm_v6_fused_ms": 0.0995,
+      "triton_vs_sdpa": "0.65x",
+      "tvm_vs_sdpa": "0.24x"
+    },
+    {
+      "architecture": "H100 (sm_90)",
+      "workload": "Llama-128",
+      "pytorch_sdpa_ms": 0.0147,
+      "triton_hand_tuned_ms": 0.0361,
+      "tvm_v6_fused_ms": 0.1054,
+      "triton_vs_sdpa": "0.41x",
+      "tvm_vs_sdpa": "0.14x"
+    },
+    {
+      "architecture": "H100 (sm_90)",
+      "workload": "Llama-512",
+      "pytorch_sdpa_ms": 0.0201,
+      "triton_hand_tuned_ms": 0.0578,
+      "tvm_v6_fused_ms": 0.2121,
+      "triton_vs_sdpa": "0.35x",
+      "tvm_vs_sdpa": "0.09x"
+    },
+    {
+      "architecture": "H100 (sm_90)",
+      "workload": "Llama-2048",
+      "pytorch_sdpa_ms": 0.2014,
+      "triton_hand_tuned_ms": 0.2269,
+      "tvm_v6_fused_ms": 3.0625,
+      "triton_vs_sdpa": "0.89x",
+      "tvm_vs_sdpa": "0.07x"
+    }
+  ]
+}

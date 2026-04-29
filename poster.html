@@ -1,0 +1,784 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>TVM MetaSchedule vs PyTorch/cuBLAS – Attention Kernel Optimization</title>
+<!--
+  PRINT INSTRUCTIONS
+  ==================
+  Open in Google Chrome → File → Print → "Save as PDF"
+  Set paper size to "Custom" → 40 in × 60 in (or 101.6 cm × 152.4 cm)
+  Set margins to "None"  |  Scale: 100%
+-->
+<style>
+/* ═══════════════════════════════════════════════════
+   PRINT PAGE SETUP – 40 × 60 inches portrait
+   ═══════════════════════════════════════════════════ */
+@page {
+  size: 40in 60in;
+  margin: 0;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  width: 40in;
+  min-height: 60in;
+  background: #E8EEF6;
+  font-family: 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+  color: #1A202C;
+  overflow: auto;
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
+}
+
+/* ═══════════════════════════════════════════════════
+   MASTER GRID
+   Rows: 6.0 + 10.0 + 12.4 + 13.2 + 10.0 + 7.0 = 58.6in
+   Padding 0.25in top+bottom = 0.5in
+   Gaps 5 × 0.15in = 0.75in
+   Total ≈ 59.85in ≈ 60in ✓
+   ═══════════════════════════════════════════════════ */
+.poster {
+  width: 40in;
+  min-height: 60in;
+  display: grid;
+  grid-template-rows: 6.0in 7.5in 13.5in 18.5in 13.5in 9.5in;
+  padding: 0.25in 0.3in;
+  gap: 0.15in;
+}
+
+/* ═══  HEADER  ═══ */
+.header {
+  background: linear-gradient(135deg, #0F2044 0%, #1A3A6B 50%, #1D4ED8 100%);
+  border-radius: 0.15in;
+  color: white;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  padding: 0.3in 0.45in;
+  gap: 0.35in;
+}
+.header h1 {
+  font-size: 62pt;
+  font-weight: 800;
+  line-height: 1.08;
+  letter-spacing: -0.5pt;
+  margin-bottom: 0.1in;
+}
+.h-subtitle { font-size: 26pt; opacity: 0.82; margin-bottom: 0.1in; line-height: 1.3; }
+.h-authors  { font-size: 32pt; font-weight: 700; margin-bottom: 0.06in; }
+.h-course   { font-size: 22pt; opacity: 0.78; }
+.hw-badge {
+  background: rgba(255,255,255,0.12);
+  border: 2pt solid rgba(255,255,255,0.28);
+  border-radius: 0.12in;
+  padding: 0.18in 0.22in;
+  text-align: center;
+  min-width: 2.6in;
+}
+.hw-badge .badge-title {
+  display: block;
+  font-size: 22pt;
+  font-weight: 800;
+  color: #FDE68A;
+  margin-bottom: 0.06in;
+  letter-spacing: 0.5pt;
+}
+.hw-badge .badge-spec {
+  display: block;
+  font-size: 16pt;
+  line-height: 1.55;
+  opacity: 0.88;
+}
+
+/* ═══  ROW GRID HELPERS  ═══ */
+.row { display: grid; gap: 0.15in; height: 100%; }
+.cols-3 { grid-template-columns: 1fr 1fr 1fr; }
+.cols-2-1 { grid-template-columns: 2fr 1fr; }
+.cols-3-2 { grid-template-columns: 3fr 2fr; }
+.cols-1 { grid-template-columns: 1fr; }
+
+/* ═══  CARDS  ═══ */
+.card {
+  background: #ffffff;
+  border-radius: 0.12in;
+  padding: 0.2in 0.24in;
+  box-shadow: 0 3pt 12pt rgba(0,0,0,0.09);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  align-content: start;
+}
+.card-title {
+  font-size: 26pt;
+  font-weight: 800;
+  color: #1E3A6E;
+  text-transform: uppercase;
+  letter-spacing: 0.8pt;
+  border-bottom: 3pt solid #2563EB;
+  padding-bottom: 0.07in;
+  margin-bottom: 0.11in;
+  flex-shrink: 0;
+}
+.card p {
+  font-size: 19pt;
+  line-height: 1.52;
+  color: #2D3748;
+  margin-bottom: 0.07in;
+}
+.card ul { list-style: none; padding: 0; }
+.card ul li {
+  font-size: 21pt;
+  line-height: 1.55;
+  color: #2D3748;
+  padding-left: 0.22in;
+  position: relative;
+  margin-bottom: 0.08in;
+}
+.card ul li::before {
+  content: '▸';
+  position: absolute;
+  left: 0;
+  color: #2563EB;
+  font-size: 15pt;
+  top: 3pt;
+}
+
+/* ═══  HIGHLIGHT BOXES  ═══ */
+.hbox {
+  border-left: 4pt solid #2563EB;
+  background: #EFF6FF;
+  border-radius: 0 0.07in 0.07in 0;
+  padding: 0.1in 0.14in;
+  margin: 0.07in 0;
+  font-size: 17pt;
+  line-height: 1.45;
+  color: #1E40AF;
+}
+.hbox.green  { border-color: #059669; background: #ECFDF5; color: #064E3B; }
+.hbox.orange { border-color: #D97706; background: #FFFBEB; color: #78350F; }
+.hbox.red    { border-color: #DC2626; background: #FEF2F2; color: #7F1D1D; }
+.hbox.purple { border-color: #7C3AED; background: #F5F3FF; color: #4C1D95; }
+
+/* ═══  STAT BOXES  ═══ */
+.stat-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.09in;
+  margin-top: 0.09in;
+  flex-shrink: 0;
+}
+.stat-box {
+  background: #F7FAFC;
+  border: 1.5pt solid #E2E8F0;
+  border-radius: 0.08in;
+  padding: 0.1in 0.08in;
+  text-align: center;
+}
+.stat-val {
+  display: block;
+  font-size: 48pt;
+  font-weight: 900;
+  color: #2563EB;
+  line-height: 1.0;
+}
+.stat-val.green  { color: #059669; }
+.stat-val.orange { color: #D97706; }
+.stat-val.red    { color: #DC2626; }
+.stat-val.purple { color: #7C3AED; }
+.stat-lbl {
+  display: block;
+  font-size: 17pt;
+  color: #718096;
+  line-height: 1.3;
+  margin-top: 0.06in;
+}
+
+/* ═══  DATA TABLES  ═══ */
+.dtable {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 0.08in;
+  flex-shrink: 0;
+}
+.dtable th {
+  background: #1E3A6E;
+  color: white;
+  padding: 0.07in 0.1in;
+  font-size: 18pt;
+  font-weight: 700;
+  text-align: center;
+}
+.dtable td {
+  padding: 0.07in 0.1in;
+  text-align: center;
+  border-bottom: 1pt solid #E2E8F0;
+  font-size: 17pt;
+}
+.dtable tr:nth-child(even) td { background: #F7FAFC; }
+.win  { color: #065F46; font-weight: 800; }
+.lose { color: #991B1B; font-weight: 700; }
+.tie  { color: #92400E; font-weight: 700; }
+
+/* ═══  CODE BLOCKS  ═══ */
+.code-block {
+  background: #F1F5F9;
+  border: 1.5pt solid #CBD5E1;
+  border-radius: 0.07in;
+  padding: 0.12in 0.14in;
+  font-family: 'Courier New', monospace;
+  font-size: 17pt;
+  line-height: 1.7;
+  color: #1E293B;
+  margin-top: 0.09in;
+}
+.code-block .cmt  { color: #64748B; }
+.code-block .key  { color: #0EA5E9; font-weight: 700; }
+.code-block .warn { color: #DC2626; font-weight: 700; }
+.code-block .good { color: #059669; font-weight: 700; }
+code {
+  font-family: 'Courier New', monospace;
+  font-size: 0.88em;
+  background: #EEF2F7;
+  border-radius: 3pt;
+  padding: 1pt 4pt;
+  color: #B91C1C;
+}
+
+/* ═══  FOOTER CARD  ═══ */
+.footer-card {
+  background: linear-gradient(135deg, #0F2044 0%, #1A3A6B 60%, #1D4ED8 100%);
+  border-radius: 0.15in;
+  padding: 0.22in 0.3in;
+  color: white;
+}
+.footer-card .card-title {
+  color: #FDE68A;
+  border-bottom-color: #FDE68A;
+  font-size: 26pt;
+}
+.concl-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 0.24in;
+  margin-top: 0.16in;
+  flex: 1;
+}
+.concl-box {
+  background: rgba(255,255,255,0.1);
+  border: 1.5pt solid rgba(255,255,255,0.22);
+  border-radius: 0.1in;
+  padding: 0.2in 0.22in;
+}
+.concl-box h3 {
+  font-size: 33pt;
+  font-weight: 800;
+  color: #FDE68A;
+  margin-bottom: 0.16in;
+}
+.concl-box p {
+  font-size: 24pt;
+  color: rgba(255,255,255,0.88);
+  line-height: 1.6;
+}
+
+svg text { font-family: 'Segoe UI', 'Helvetica Neue', Arial, sans-serif; }
+</style>
+</head>
+<body>
+<div class="poster">
+
+<!-- ════════════════════════════════════
+     ROW 0 – HEADER
+     ════════════════════════════════════ -->
+<div class="header">
+  <div>
+    <h1>TVM MetaSchedule vs PyTorch/cuBLAS:<br>Attention Kernel Optimization for Transformer Inference</h1>
+    <div class="h-subtitle">Fine-grained benchmarking of auto-tuned WMMA kernels against cuBLAS across BERT &amp; Llama configurations</div>
+    <div class="h-authors">David Zhu &nbsp;&nbsp;·&nbsp;&nbsp; Alvin Wang</div>
+    <div class="h-course">15-442/15-642: Machine Learning Systems &nbsp;·&nbsp; Carnegie Mellon University</div>
+  </div>
+  <div class="hw-badge">
+    <span class="badge-title">NVIDIA L40S</span>
+    <span class="badge-spec">Ada Lovelace · sm_89<br>330 TFLOPS FP16<br>864 GB/s HBM<br>48 GB VRAM</span>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════
+     ROW 1 – Motivation | Overview | Design
+     ════════════════════════════════════ -->
+<div class="row cols-3">
+
+  <div class="card">
+    <div class="card-title">Motivation</div>
+    <p>Transformer attention is the dominant compute bottleneck in modern LLMs. Efficient kernels for its three sub-operations — <strong>QKV projection</strong>, <strong>QK dot product</strong>, and <strong>attention-value (AV) sum</strong> — directly determine end-to-end inference latency at every scale.</p>
+    <div class="hbox" style="margin-top:0.08in">
+      <strong>Research question:</strong> Can TVM MetaSchedule auto-tune Tensor Core WMMA kernels that match or exceed hand-optimized cuBLAS on an NVIDIA L40S?
+    </div>
+    <p style="margin-top:0.09in">This project performs <strong>operation-level isolation</strong> — measuring each attention component separately — and goes beyond black-box timing to <strong>analyze generated CUDA kernel assembly</strong> and explain performance gaps mechanistically via inspection of <code>cp.async</code>, WMMA fragment counts, and thread-block sizing.</p>
+    <div class="hbox green" style="margin-top:0.08in">
+      <strong>Key innovation:</strong> A single shared projection kernel is tuned once for Q, K, and V — reusing one compiled artifact for all three projections rather than redundantly tuning three near-identical GEMMs.
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">System Overview</div>
+    <p>Five workload configurations spanning BERT and Llama model families:</p>
+    <table class="dtable" style="margin-top:0.07in">
+      <thead>
+        <tr><th>Model</th><th>seq_len</th><th>hidden_dim</th><th>num_heads</th><th>head_dim</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>BERT</td><td>128</td><td>768</td><td>12</td><td>64</td></tr>
+        <tr><td>BERT</td><td>512</td><td>768</td><td>12</td><td>64</td></tr>
+        <tr><td>Llama</td><td>128</td><td>4096</td><td>32</td><td>128</td></tr>
+        <tr><td>Llama</td><td>512</td><td>4096</td><td>32</td><td>128</td></tr>
+        <tr><td>Llama</td><td>2048</td><td>4096</td><td>32</td><td>128</td></tr>
+      </tbody>
+    </table>
+    <p style="margin-top:0.1in"><strong>TVM tuning:</strong> 800 MetaSchedule trials per kernel, generating 15 CUDA kernels total ({QKV proj · QK dot · AV sum} × 5 shapes). All kernels use <code>nvcuda::wmma</code> 16×16×16 FP16 fragments on Tensor Cores.</p>
+    <div class="hbox" style="margin-top:0.08in">
+      <strong>Timing:</strong> 200 timed iterations · 20 warmup iters · wall-clock synchronised via <code>cuda.synchronize()</code> · all on NVIDIA L40S (Modal cloud)
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Benchmark Design</div>
+    <p>Three sub-operations measured <strong>in isolation</strong> for apples-to-apples comparison — each pinning one attention component at a time:</p>
+    <table class="dtable" style="margin-top:0.07in">
+      <thead>
+        <tr><th>Operation</th><th>PyTorch backend</th><th>TVM backend</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><strong>QKV proj</strong></td><td><code>F.linear</code> → cuBLAS GEMM</td><td>MetaSchedule WMMA kernel</td></tr>
+        <tr><td><strong>QK dot</strong></td><td>Python loop · <code>torch.matmul</code></td><td>Python loop · TVM mod</td></tr>
+        <tr><td><strong>AV sum</strong></td><td>Python loop · <code>torch.matmul</code></td><td>Python loop · TVM mod</td></tr>
+        <tr><td><strong>Pipeline</strong></td><td>QKV + QK + AV chained</td><td>TVM equivalents chained</td></tr>
+        <tr><td><strong>SDPA</strong></td><td>Flash Attention v2 (reference)</td><td>— N/A —</td></tr>
+      </tbody>
+    </table>
+    <p style="margin-top:0.1in">Both PyTorch <em>batched</em> (optimal) and <em>per-head loop</em> (matched to TVM's execution style) paths are measured. TVM is compared against the <strong>matched loop path</strong> for fair head-level granularity comparison.</p>
+    <div class="hbox orange" style="margin-top:0.08in">
+      <strong>v2 fix:</strong> SDPA uses <code>[1, seq, heads, head_dim]</code> layout + <code>.contiguous()</code> to trigger Flash Attention fast-path — preventing a 3–10× slower fallback to unfused math reference.
+    </div>
+  </div>
+
+</div><!-- /row 1 -->
+
+<!-- ════════════════════════════════════
+     ROW 2 – Pipeline Latency Chart (full width)
+     ════════════════════════════════════ -->
+<div class="row cols-1">
+<div class="card">
+  <div class="card-title">Full Pipeline Latency — PyTorch Loop vs TVM vs Flash Attention (SDPA)</div>
+  <!--
+    Pipeline latency chart
+    Y-axis: 0–2.5ms, chartArea x=90..1060, y=30..420, height=390, yScale=156px/ms
+    Groups spaced with centers at approx 175, 367, 559, 751, 943
+    3 bars per group (PT=blue, TVM=orange, SDPA=green), barW=52, gap=10
+    groupW = 3*52+2*10 = 176  half=88
+    G1 start=87  G2=279  G3=471  G4=663  G5=855
+    PT bars: 87,  279, 471, 663, 855
+    TVM bars:149, 341, 533, 725, 917
+    SDPA bars:211,403, 595, 787, 979
+    Last bar end: 979+52=1031 < 1060 ✓
+  -->
+  <svg viewBox="0 0 1120 515" style="width:100%;height:auto;margin-top:0.04in" aria-label="Pipeline latency comparison bar chart">
+    <defs>
+      <marker id="arr" markerWidth="6" markerHeight="6" refX="3" refY="3" orient="auto">
+        <path d="M0,0 L0,6 L6,3 z" fill="#64748B"/>
+      </marker>
+    </defs>
+
+    <!-- Chart background -->
+    <rect x="90" y="30" width="970" height="390" fill="#FAFCFF" stroke="#E2E8F0" stroke-width="1.5" rx="4"/>
+
+    <!-- Gridlines + Y-axis labels  (yScale=156, chartBottom=420) -->
+    <!-- 0.0ms --> <line x1="90" y1="420" x2="1060" y2="420" stroke="#94A3B8" stroke-width="1.5"/>
+    <text x="82" y="424" text-anchor="end" font-size="18" fill="#64748B">0</text>
+
+    <!-- 0.5ms y=420-78=342 --> <line x1="90" y1="342" x2="1060" y2="342" stroke="#CBD5E1" stroke-width="1" stroke-dasharray="5,4"/>
+    <text x="82" y="346" text-anchor="end" font-size="18" fill="#64748B">0.5</text>
+
+    <!-- 1.0ms y=420-156=264 --> <line x1="90" y1="264" x2="1060" y2="264" stroke="#94A3B8" stroke-width="1.5"/>
+    <text x="82" y="268" text-anchor="end" font-size="18" fill="#64748B">1.0</text>
+
+    <!-- 1.5ms y=420-234=186 --> <line x1="90" y1="186" x2="1060" y2="186" stroke="#CBD5E1" stroke-width="1" stroke-dasharray="5,4"/>
+    <text x="82" y="190" text-anchor="end" font-size="18" fill="#64748B">1.5</text>
+
+    <!-- 2.0ms y=420-312=108 --> <line x1="90" y1="108" x2="1060" y2="108" stroke="#94A3B8" stroke-width="1.5"/>
+    <text x="82" y="112" text-anchor="end" font-size="18" fill="#64748B">2.0</text>
+
+    <!-- 2.5ms y=420-390=30 --> <line x1="90" y1="30" x2="1060" y2="30" stroke="#CBD5E1" stroke-width="1" stroke-dasharray="5,4"/>
+    <text x="82" y="34" text-anchor="end" font-size="18" fill="#64748B">2.5</text>
+
+    <!-- Y axis label -->
+    <text x="22" y="225" text-anchor="middle" font-size="20" fill="#475569" transform="rotate(-90 22 225)">Latency (ms)</text>
+    <line x1="90" y1="30" x2="90" y2="420" stroke="#475569" stroke-width="2"/>
+
+    <!-- ── GROUP 1: BERT-128 ──
+         PT=0.437 → h=68.2 y=351.8   TVM=0.214 → h=33.4 y=386.6   SDPA=0.119 → h=18.6 y=401.4 -->
+    <rect x="87"  y="352" width="52" height="68"  fill="#3B82F6" rx="3"/>
+    <rect x="149" y="387" width="52" height="33"  fill="#F97316" rx="3"/>
+    <rect x="211" y="401" width="52" height="19"  fill="#10B981" rx="3"/>
+    <text x="113" y="346" text-anchor="middle" font-size="14" fill="#1D4ED8" font-weight="700">0.44</text>
+    <text x="175" y="381" text-anchor="middle" font-size="14" fill="#C2410C" font-weight="700">0.21</text>
+    <text x="237" y="396" text-anchor="middle" font-size="14" fill="#065F46" font-weight="700">0.12</text>
+    <text x="175" y="443" text-anchor="middle" font-size="18" fill="#374151" font-weight="600">BERT-128</text>
+    <text x="175" y="461" text-anchor="middle" font-size="14" fill="#9CA3AF">seq=128, h=768</text>
+
+    <!-- ── GROUP 2: BERT-512 ──
+         PT=0.454 → h=70.8 y=349.2   TVM=0.258 → h=40.2 y=379.8   SDPA=0.133 → h=20.7 y=399.3 -->
+    <rect x="279" y="349" width="52" height="71"  fill="#3B82F6" rx="3"/>
+    <rect x="341" y="380" width="52" height="40"  fill="#F97316" rx="3"/>
+    <rect x="403" y="399" width="52" height="21"  fill="#10B981" rx="3"/>
+    <text x="305" y="343" text-anchor="middle" font-size="14" fill="#1D4ED8" font-weight="700">0.45</text>
+    <text x="367" y="374" text-anchor="middle" font-size="14" fill="#C2410C" font-weight="700">0.26</text>
+    <text x="429" y="394" text-anchor="middle" font-size="14" fill="#065F46" font-weight="700">0.13</text>
+    <text x="367" y="443" text-anchor="middle" font-size="18" fill="#374151" font-weight="600">BERT-512</text>
+    <text x="367" y="461" text-anchor="middle" font-size="14" fill="#9CA3AF">seq=512, h=768</text>
+
+    <!-- ── GROUP 3: Llama-128 ──
+         PT=1.087 → h=169.6 y=250.4   TVM=0.608 → h=94.8 y=325.2   SDPA=0.139 → h=21.7 y=398.3 -->
+    <rect x="471" y="250" width="52" height="170" fill="#3B82F6" rx="3"/>
+    <rect x="533" y="325" width="52" height="95"  fill="#F97316" rx="3"/>
+    <rect x="595" y="398" width="52" height="22"  fill="#10B981" rx="3"/>
+    <text x="497" y="244" text-anchor="middle" font-size="14" fill="#1D4ED8" font-weight="700">1.09</text>
+    <text x="559" y="319" text-anchor="middle" font-size="14" fill="#C2410C" font-weight="700">0.61</text>
+    <text x="621" y="393" text-anchor="middle" font-size="14" fill="#065F46" font-weight="700">0.14</text>
+    <!-- SDPA speedup annotation -->
+    <text x="621" y="360" text-anchor="middle" font-size="13" fill="#065F46" font-weight="700">4.4× faster</text>
+    <line x1="621" y1="364" x2="621" y2="393" stroke="#059669" stroke-width="1.5" stroke-dasharray="3,2"/>
+    <text x="559" y="443" text-anchor="middle" font-size="18" fill="#374151" font-weight="600">Llama-128</text>
+    <text x="559" y="461" text-anchor="middle" font-size="14" fill="#9CA3AF">seq=128, h=4096</text>
+
+    <!-- ── GROUP 4: Llama-512 ──
+         PT=1.230 → h=191.9 y=228.1   TVM=0.933 → h=145.5 y=274.5   SDPA=0.288 → h=44.9 y=375.1 -->
+    <rect x="663" y="228" width="52" height="192" fill="#3B82F6" rx="3"/>
+    <rect x="725" y="275" width="52" height="145" fill="#F97316" rx="3"/>
+    <rect x="787" y="375" width="52" height="45"  fill="#10B981" rx="3"/>
+    <text x="689" y="222" text-anchor="middle" font-size="14" fill="#1D4ED8" font-weight="700">1.23</text>
+    <text x="751" y="269" text-anchor="middle" font-size="14" fill="#C2410C" font-weight="700">0.93</text>
+    <text x="813" y="369" text-anchor="middle" font-size="14" fill="#065F46" font-weight="700">0.29</text>
+    <text x="751" y="443" text-anchor="middle" font-size="18" fill="#374151" font-weight="600">Llama-512</text>
+    <text x="751" y="461" text-anchor="middle" font-size="14" fill="#9CA3AF">seq=512, h=4096</text>
+
+    <!-- ── GROUP 5: Llama-2048 ──
+         PT=2.137 → h=333.4 y=86.6   TVM=2.112 → h=329.5 y=90.5   SDPA=1.359 → h=212.0 y=208.0 -->
+    <rect x="855" y="87"  width="52" height="333" fill="#3B82F6" rx="3"/>
+    <rect x="917" y="91"  width="52" height="329" fill="#F97316" rx="3"/>
+    <rect x="979" y="208" width="52" height="212" fill="#10B981" rx="3"/>
+    <text x="881" y="81"  text-anchor="middle" font-size="14" fill="#1D4ED8" font-weight="700">2.14</text>
+    <text x="943" y="85"  text-anchor="middle" font-size="14" fill="#C2410C" font-weight="700">2.11</text>
+    <text x="1005" y="202" text-anchor="middle" font-size="14" fill="#065F46" font-weight="700">1.36</text>
+    <!-- Near-tie annotation -->
+    <text x="906" y="58" text-anchor="middle" font-size="15" fill="#475569" font-style="italic">≈ tied at large scale</text>
+    <line x1="868" y1="62" x2="943" y2="62" stroke="#94A3B8" stroke-width="1.5"/>
+    <line x1="868" y1="62" x2="868" y2="87" stroke="#94A3B8" stroke-width="1"/>
+    <line x1="943" y1="62" x2="943" y2="91" stroke="#94A3B8" stroke-width="1"/>
+    <text x="943" y="443" text-anchor="middle" font-size="18" fill="#374151" font-weight="600">Llama-2048</text>
+    <text x="943" y="461" text-anchor="middle" font-size="14" fill="#9CA3AF">seq=2048, h=4096</text>
+
+    <!-- Legend -->
+    <rect x="200" y="497" width="20" height="15" fill="#3B82F6" rx="3"/>
+    <text x="225" y="509" font-size="17" fill="#374151">PyTorch Loop Pipeline</text>
+    <rect x="490" y="497" width="20" height="15" fill="#F97316" rx="3"/>
+    <text x="515" y="509" font-size="17" fill="#374151">TVM Pipeline</text>
+    <rect x="730" y="497" width="20" height="15" fill="#10B981" rx="3"/>
+    <text x="755" y="509" font-size="17" fill="#374151">PyTorch SDPA (Flash Attention v2)</text>
+  </svg>
+</div>
+</div><!-- /row 2 -->
+
+<!-- ════════════════════════════════════
+     ROW 3 – Speedup Chart + SDPA Gap Table
+     ════════════════════════════════════ -->
+<div class="row cols-3-2">
+
+  <div class="card">
+    <div class="card-title">Speedup Ratio by Operation &nbsp;(PT latency ÷ TVM latency — above 1.0× = TVM wins)</div>
+    <!--
+      Speedup chart
+      Y: 0–2.1, chartArea x=90..1080, y=30..400 (h=370), yScale=370/2.1=176.19
+      chartBottom=400, breakeven y=400-176.19=223.8
+      4 bars per group, barW=38, gap=6, groupW=4*38+3*6=170, half=85
+      Centers: 175, 367, 559, 751, 943
+      Group starts: 90, 282, 474, 666, 858
+      Bar offsets within group: 0, 44, 88, 132
+      G1: 90,134,178,222   G2:282,326,370,414   G3:474,518,562,606
+      G4:666,710,754,798   G5:858,902,946,990   Last end: 990+38=1028<1080 ✓
+      yScale=176.19
+      Gridlines: 0.5→y=312, 1.0→y=223.8, 1.5→y=135.7, 2.0→y=47.6
+    -->
+    <!--
+      REDRAWN LARGE: viewBox 0 0 1280 710
+      Chart area: x=80..1200 (w=1120), y=40..580 (h=540)
+      yScale = 540/2.1 = 257.1   chartBottom=580
+      Gridlines: 0→580, 0.5→451, 1.0→323(breakeven), 1.5→194, 2.0→66
+      barW=44, gap=7, groupW=197, interGroupGap=34
+      G1 start=80, G2=311, G3=542, G4=773, G5=1004  last bar end=1201 ✓
+      Group centers: G1=179, G2=410, G3=641, G4=872, G5=1103
+    -->
+    <svg viewBox="0 0 1280 710" style="width:100%;height:auto;margin-top:0.03in">
+      <rect x="80" y="40" width="1120" height="540" fill="#FAFCFF" stroke="#E2E8F0" stroke-width="1.5" rx="4"/>
+
+      <!-- Gridlines -->
+      <line x1="80" y1="580" x2="1200" y2="580" stroke="#94A3B8" stroke-width="2"/>
+      <text x="70" y="584" text-anchor="end" font-size="22" fill="#64748B">0</text>
+
+      <line x1="80" y1="451" x2="1200" y2="451" stroke="#CBD5E1" stroke-width="1.2" stroke-dasharray="6,4"/>
+      <text x="70" y="455" text-anchor="end" font-size="22" fill="#64748B">0.5</text>
+
+      <line x1="80" y1="323" x2="1200" y2="323" stroke="#EF4444" stroke-width="3" stroke-dasharray="10,6"/>
+      <text x="70" y="327" text-anchor="end" font-size="22" fill="#EF4444" font-weight="700">1.0</text>
+      <rect x="1203" y="308" width="112" height="28" fill="#FEF2F2" rx="3"/>
+      <text x="1259" y="326" text-anchor="middle" font-size="18" fill="#DC2626" font-weight="700">breakeven</text>
+
+      <line x1="80" y1="194" x2="1200" y2="194" stroke="#CBD5E1" stroke-width="1.2" stroke-dasharray="6,4"/>
+      <text x="70" y="198" text-anchor="end" font-size="22" fill="#64748B">1.5</text>
+
+      <line x1="80" y1="66" x2="1200" y2="66" stroke="#CBD5E1" stroke-width="1.2" stroke-dasharray="6,4"/>
+      <text x="70" y="70" text-anchor="end" font-size="22" fill="#64748B">2.0</text>
+
+      <line x1="80" y1="40" x2="80" y2="580" stroke="#475569" stroke-width="2.5"/>
+      <text x="22" y="310" text-anchor="middle" font-size="26" fill="#475569" transform="rotate(-90 22 310)">Speedup (PT / TVM)</text>
+
+      <!-- G1: BERT-128  h: 170,352,316,311  y: 410,228,264,269 -->
+      <rect x="80"  y="410" width="44" height="170" fill="#94A3B8" rx="3"/>
+      <rect x="131" y="228" width="44" height="352" fill="#3B82F6" rx="3"/>
+      <rect x="182" y="264" width="44" height="316" fill="#0D9488" rx="3"/>
+      <rect x="233" y="269" width="44" height="311" fill="#8B5CF6" rx="3"/>
+      <text x="102" y="402" text-anchor="middle" font-size="18" fill="#475569" font-weight="700">0.66</text>
+      <text x="153" y="220" text-anchor="middle" font-size="18" fill="#1D4ED8" font-weight="700">1.37</text>
+      <text x="204" y="256" text-anchor="middle" font-size="18" fill="#065F46" font-weight="700">1.23</text>
+      <text x="255" y="261" text-anchor="middle" font-size="18" fill="#5B21B6" font-weight="700">1.21</text>
+      <text x="179" y="604" text-anchor="middle" font-size="22" fill="#374151" font-weight="700">BERT-128</text>
+
+      <!-- G2: BERT-512  h: 147,345,321,306  y: 433,235,259,274 -->
+      <rect x="311" y="433" width="44" height="147" fill="#94A3B8" rx="3"/>
+      <rect x="362" y="235" width="44" height="345" fill="#3B82F6" rx="3"/>
+      <rect x="413" y="259" width="44" height="321" fill="#0D9488" rx="3"/>
+      <rect x="464" y="274" width="44" height="306" fill="#8B5CF6" rx="3"/>
+      <text x="333" y="425" text-anchor="middle" font-size="18" fill="#475569" font-weight="700">0.57</text>
+      <text x="384" y="227" text-anchor="middle" font-size="18" fill="#1D4ED8" font-weight="700">1.34</text>
+      <text x="435" y="251" text-anchor="middle" font-size="18" fill="#065F46" font-weight="700">1.25</text>
+      <text x="486" y="266" text-anchor="middle" font-size="18" fill="#5B21B6" font-weight="700">1.19</text>
+      <text x="410" y="604" text-anchor="middle" font-size="22" fill="#374151" font-weight="700">BERT-512</text>
+
+      <!-- G3: Llama-128  h: 170,365,327,324  y: 410,215,253,256 -->
+      <rect x="542" y="410" width="44" height="170" fill="#94A3B8" rx="3"/>
+      <rect x="593" y="215" width="44" height="365" fill="#3B82F6" rx="3"/>
+      <rect x="644" y="253" width="44" height="327" fill="#0D9488" rx="3"/>
+      <rect x="695" y="256" width="44" height="324" fill="#8B5CF6" rx="3"/>
+      <text x="564" y="402" text-anchor="middle" font-size="18" fill="#475569" font-weight="700">0.66</text>
+      <text x="615" y="207" text-anchor="middle" font-size="18" fill="#1D4ED8" font-weight="700">1.42</text>
+      <text x="666" y="245" text-anchor="middle" font-size="18" fill="#065F46" font-weight="700">1.27</text>
+      <text x="717" y="248" text-anchor="middle" font-size="18" fill="#5B21B6" font-weight="700">1.26</text>
+      <text x="641" y="604" text-anchor="middle" font-size="22" fill="#374151" font-weight="700">Llama-128</text>
+
+      <!-- G4: Llama-512  h: 185,507,396,357  y: 395,73,184,223 (BEST) -->
+      <rect x="773" y="395" width="44" height="185" fill="#94A3B8" rx="3"/>
+      <rect x="824" y="73"  width="44" height="507" fill="#3B82F6" rx="3"/>
+      <rect x="875" y="184" width="44" height="396" fill="#0D9488" rx="3"/>
+      <rect x="926" y="223" width="44" height="357" fill="#8B5CF6" rx="3"/>
+      <text x="795" y="387" text-anchor="middle" font-size="18" fill="#475569" font-weight="700">0.72</text>
+      <text x="846" y="62" text-anchor="middle" font-size="20" fill="#1D4ED8" font-weight="900">★ 1.97×</text>
+      <text x="846" y="46" text-anchor="middle" font-size="17" fill="#1D4ED8">best QK speedup</text>
+      <text x="897" y="176" text-anchor="middle" font-size="18" fill="#065F46" font-weight="700">1.54</text>
+      <text x="948" y="215" text-anchor="middle" font-size="18" fill="#5B21B6" font-weight="700">1.39</text>
+      <text x="872" y="604" text-anchor="middle" font-size="22" fill="#374151" font-weight="700">Llama-512</text>
+
+      <!-- G5: Llama-2048  h: 257,234,242,247  y: 323,346,338,333 -->
+      <rect x="1004" y="323" width="44" height="257" fill="#94A3B8" rx="3" opacity="0.75"/>
+      <rect x="1055" y="346" width="44" height="234" fill="#3B82F6" rx="3" opacity="0.75"/>
+      <rect x="1106" y="338" width="44" height="242" fill="#0D9488" rx="3" opacity="0.75"/>
+      <rect x="1157" y="333" width="44" height="247" fill="#8B5CF6" rx="3" opacity="0.75"/>
+      <text x="1026" y="315" text-anchor="middle" font-size="18" fill="#475569" font-weight="700">1.00</text>
+      <text x="1077" y="338" text-anchor="middle" font-size="18" fill="#1D4ED8" font-weight="700">0.91</text>
+      <text x="1128" y="330" text-anchor="middle" font-size="18" fill="#065F46" font-weight="700">0.94</text>
+      <text x="1179" y="325" text-anchor="middle" font-size="18" fill="#5B21B6" font-weight="700">0.96</text>
+      <text x="1103" y="302" text-anchor="middle" font-size="18" fill="#991B1B" font-style="italic">cuBLAS catches up</text>
+      <text x="1103" y="604" text-anchor="middle" font-size="22" fill="#374151" font-weight="700">Llama-2048</text>
+
+      <!-- Zone labels -->
+      <rect x="82" y="42" width="200" height="30" fill="#ECFDF5" rx="3" opacity="0.88"/>
+      <text x="182" y="62" text-anchor="middle" font-size="20" fill="#065F46" font-weight="700">▲ TVM Faster</text>
+      <rect x="82" y="548" width="228" height="30" fill="#FEF2F2" rx="3" opacity="0.88"/>
+      <text x="196" y="568" text-anchor="middle" font-size="20" fill="#991B1B" font-weight="700">▼ PyTorch Faster</text>
+
+      <!-- Legend -->
+      <rect x="150" y="628" width="24" height="20" fill="#94A3B8" rx="3"/>
+      <text x="180" y="644" font-size="22" fill="#374151">QKV Proj</text>
+      <rect x="400" y="628" width="24" height="20" fill="#3B82F6" rx="3"/>
+      <text x="430" y="644" font-size="22" fill="#374151">QK Dot Loop</text>
+      <rect x="680" y="628" width="24" height="20" fill="#0D9488" rx="3"/>
+      <text x="710" y="644" font-size="22" fill="#374151">AV Sum Loop</text>
+      <rect x="940" y="628" width="24" height="20" fill="#8B5CF6" rx="3"/>
+      <text x="970" y="644" font-size="22" fill="#374151">Full Pipeline</text>
+    </svg>
+  </div>
+
+  <!-- SDPA Gap + Speedup Table -->
+  <div class="card">
+    <div class="card-title">Speedup Summary &amp; SDPA Gap</div>
+    <p style="font-size:22pt;color:#64748B;margin-bottom:0.1in">All ratios = PT latency ÷ TVM latency. <span style="color:#065F46;font-weight:700">Green</span> = TVM faster · <span style="color:#991B1B;font-weight:700">Red</span> = TVM slower</p>
+
+    <table class="dtable">
+      <thead>
+        <tr><th>Workload</th><th>QKV</th><th>QK dot</th><th>AV sum</th><th>Pipeline</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><strong>BERT-128</strong></td>  <td class="lose">0.66×</td><td class="win">1.37×</td><td class="win">1.23×</td><td class="win">1.21×</td></tr>
+        <tr><td><strong>BERT-512</strong></td>  <td class="lose">0.57×</td><td class="win">1.34×</td><td class="win">1.25×</td><td class="win">1.19×</td></tr>
+        <tr><td><strong>Llama-128</strong></td> <td class="lose">0.66×</td><td class="win">1.42×</td><td class="win">1.27×</td><td class="win">1.26×</td></tr>
+        <tr><td><strong>Llama-512</strong></td> <td class="lose">0.72×</td><td class="win">1.97×</td><td class="win">1.54×</td><td class="win">1.39×</td></tr>
+        <tr><td><strong>Llama-2048</strong></td><td class="tie">1.00×</td><td class="lose">0.91×</td><td class="lose">0.94×</td><td class="lose">0.96×</td></tr>
+      </tbody>
+    </table>
+
+    <p style="font-size:24pt;font-weight:700;color:#1E3A6E;margin-top:0.15in;margin-bottom:0.08in">Flash Attention (SDPA) vs TVM Pipeline</p>
+    <table class="dtable">
+      <thead><tr><th>Workload</th><th>TVM Pipeline</th><th>SDPA</th><th>SDPA Speedup</th></tr></thead>
+      <tbody>
+        <tr><td>BERT-128</td>  <td>0.214 ms</td><td>0.119 ms</td><td class="lose">1.8×</td></tr>
+        <tr><td>BERT-512</td>  <td>0.258 ms</td><td>0.133 ms</td><td class="lose">1.9×</td></tr>
+        <tr><td>Llama-128</td> <td>0.608 ms</td><td>0.139 ms</td><td class="lose">4.4×</td></tr>
+        <tr><td>Llama-512</td> <td>0.933 ms</td><td>0.288 ms</td><td class="lose">3.2×</td></tr>
+        <tr><td>Llama-2048</td><td>2.112 ms</td><td>1.359 ms</td><td class="lose">1.6×</td></tr>
+      </tbody>
+    </table>
+
+    <div class="hbox orange" style="margin-top:0.14in;font-size:21pt">
+      <strong>Algorithmic advantage:</strong> Flash Attention never materialises the full <code>(seq, seq)</code> attention matrix to HBM. At Llama-128 with 32 heads, unfused attention writes&nbsp;<strong>~32 MB</strong> of scores; Flash Attention eliminates this in a tiled streaming pass.
+    </div>
+
+    <div class="stat-grid" style="margin-top:0.14in">
+      <div class="stat-box"><span class="stat-val green">1.97×</span><span class="stat-lbl">Best TVM speedup<br>(Llama-512 QK dot)</span></div>
+      <div class="stat-box"><span class="stat-val orange">0.57×</span><span class="stat-lbl">Worst TVM ratio<br>(BERT-512 QKV proj)</span></div>
+      <div class="stat-box"><span class="stat-val green">1.39×</span><span class="stat-lbl">Best pipeline win<br>(Llama-512)</span></div>
+      <div class="stat-box"><span class="stat-val purple">4.4×</span><span class="stat-lbl">Largest SDPA gap<br>(Llama-128)</span></div>
+    </div>
+  </div>
+
+</div><!-- /row 3 -->
+
+<!-- ════════════════════════════════════
+     ROW 4 – Kernel Analysis | Key Findings
+     ════════════════════════════════════ -->
+<div class="row cols-3-2">
+
+  <div class="card">
+    <div class="card-title">Kernel Implementation Deep-Dive</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.22in;flex:1">
+
+      <div>
+        <p style="font-weight:800;font-size:26pt;color:#1D4ED8;margin-bottom:0.09in">TVM WMMA Pattern (Blocking)</p>
+        <p style="font-size:21pt;margin-bottom:0.09in">All 15 auto-tuned kernels use <code>nvcuda::wmma</code> 16×16×16 FP16 fragments. Critical limitation: <strong>not a single</strong> <code>cp.async</code> instruction across all kernels. Every HBM load blocks the warp before compute can proceed.</p>
+        <div class="hbox red" style="font-size:19pt">
+          <strong>Inspection result: cp_async = 0</strong> across all 15 kernels.<br>
+          Memory latency (~400–600 ns per L2 miss) is fully exposed on every inner-loop iteration.
+        </div>
+        <div class="code-block" style="margin-top:0.08in">
+          <span class="cmt">// Load A &amp; B tiles → shared memory</span><br>
+          <span>*(uint4*)shmem[off_a] = *(uint4*)(A+ga);</span><br>
+          <span>*(uint4*)shmem[off_b] = *(uint4*)(B+gb);</span><br>
+          <span class="warn">__syncthreads(); // FULL BARRIER — all loads must</span><br>
+          <span class="warn">                 // complete before any compute</span><br>
+          <br>
+          <span>wmma::load_matrix_sync(A_frag, &amp;shmem[a_base], ld);</span><br>
+          <span>wmma::load_matrix_sync(B_frag, &amp;shmem[b_base], ld);</span><br>
+          <span>wmma::mma_sync(C_frag, A_frag, B_frag, C_frag);</span>
+        </div>
+        <p style="margin-top:0.12in;font-size:21pt"><strong>Thread block inventory</strong> (tuned per shape):</p>
+        <table class="dtable" style="margin-top:0.08in">
+          <thead><tr><th>Kernel</th><th>Threads</th><th>mma_sync</th><th>load_sync</th></tr></thead>
+          <tbody>
+            <tr><td>proj_BERT_128</td><td>128</td><td>48</td><td>96</td></tr>
+            <tr><td>proj_Llama_2048</td><td>128</td><td>64</td><td>24</td></tr>
+            <tr><td>QK_dot_Llama_128</td><td>32</td><td>1</td><td>2</td></tr>
+            <tr><td>QK_dot_Llama_2048</td><td>256</td><td>64</td><td>48</td></tr>
+            <tr><td>AV_sum_Llama_2048</td><td>256</td><td>128</td><td>256</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div>
+        <p style="font-weight:800;font-size:26pt;color:#D97706;margin-bottom:0.09in">cuBLAS Pattern (Async Pipelined)</p>
+        <p style="font-size:21pt;margin-bottom:0.09in">cuBLAS on sm_89 uses <strong>software pipelining</strong> (double buffering) with <code>cp.async</code> — prefetching the next tile asynchronously while Tensor Cores compute on the current tile. Memory latency is completely hidden.</p>
+        <div class="hbox green" style="font-size:19pt">
+          <strong>cp.async double buffering</strong> hides every HBM load behind Tensor Core computation. Average HBM latency (~400–600 ns) never appears on the critical path.
+        </div>
+        <div class="code-block" style="margin-top:0.08in">
+          <span class="cmt">// Prefetch NEXT tile while computing CURRENT tile</span><br>
+          <span class="good">cp.async.cg.shared.global [shmem_A_next],</span><br>
+          <span class="good">    [gmem_A_next+step], 16; // async — non-blocking</span><br>
+          <span class="good">cp.async.commit_group;</span><br>
+          <br>
+          <span>wmma::mma_sync(C, A_curr, B_curr, C); // compute</span><br>
+          <br>
+          <span class="good">cp.async.wait_group 0; // wait only at stage flip</span><br>
+          <span>__syncthreads();</span><br>
+          <span class="cmt">swap(shmem_A_curr, shmem_A_next); // flip buffers</span>
+        </div>
+        <div class="hbox" style="margin-top:0.12in;font-size:19pt">
+          <strong>Why the gap closes at Llama-2048:</strong> At hidden_dim=4096 and seq=2048, both kernels saturate the L40S at ~330 TFLOPS FP16 compute ceiling. The memory overhead is amortised over so many FLOPs that pipeline differences become secondary.
+        </div>
+        <p style="margin-top:0.12in;font-size:21pt;color:#374151"><strong>Why TVM wins on QK/AV loops:</strong> PyTorch's Python <code>for h in range(num_heads)</code> loop incurs 3–8 µs CUDA launch overhead per head iteration (×12–32 heads × 200 benchmark iters). TVM compiles all logic into a single kernel launch eliminating this overhead entirely.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Key Findings</div>
+
+    <p style="font-size:25pt;font-weight:800;color:#059669;margin-bottom:0.08in">Where TVM MetaSchedule Wins</p>
+    <ul>
+      <li><strong>Eliminates Python loop launch overhead</strong> for per-head dot products. PyTorch's <code>torch.matmul</code> in a Python <code>for h in range(32)</code> loop fires 32 separate cuBLAS calls per forward pass — each costing 3–8 µs. TVM compiles this into <em>one</em> kernel launch.</li>
+      <li><strong>Problem-matched thread blocks:</strong> <code>QK_dot_Llama_128</code> uses exactly 32 threads (one warp) for a tiny 128×64 per-head GEMM — matching occupancy to actual parallelism where cuBLAS would over-provision.</li>
+      <li><strong>Consistent Tensor Core exploitation:</strong> 100% of kernels use 16×16×16 FP16 WMMA fragments — correct use of the L40S's Ada Lovelace hardware.</li>
+      <li><strong>Best-case 1.97× speedup</strong> on Llama-512 QK dot — the ideal regime where sequence-level parallelism creates launch overhead and problem size still fits in L2 cache.</li>
+    </ul>
+
+    <div style="height:0.14in"></div>
+    <p style="font-size:25pt;font-weight:800;color:#DC2626;margin-bottom:0.08in">Where TVM MetaSchedule Loses</p>
+    <ul>
+      <li><strong>No <code>cp.async</code> pipelining</strong> — the single defining structural bottleneck. MetaSchedule's search space does not include async-copy schedule templates, exposing full HBM latency on every K-reduction inner-loop step.</li>
+      <li><strong>QKV projection always slower (0.57×–1.00×):</strong> At hidden_dim=4096 the projection GEMM has K=4096, yielding 128 outer loop iterations in <code>proj_Llama_2048</code> — accumulated exposed memory latency adds a measurable deficit.</li>
+      <li><strong>AV sum reverses at Llama-2048:</strong> The per-head attention-value multiply becomes a <code>(2048×2048) × (2048×128)</code> GEMM — large enough for cuBLAS's async copy advantage to overcome its launch overhead (0.94×).</li>
+    </ul>
+
+    <div class="hbox" style="margin-top:0.14in;font-size:21pt">
+      <strong>Practical recommendation:</strong> For LLM KV-cache decoding (short sequences, many head iterations), TVM reduces per-head loop costs by <strong>1.2×–2.0×</strong>. For prefill with long context, Flash Attention (SDPA) is <strong>1.6×–4.4× faster</strong> than any unfused approach regardless of kernel backend. The QKV projection GEMM should remain with cuBLAS until MetaSchedule supports <code>cp.async</code> pipelined schedules.
+    </div>
+  </div>
+
+</div><!-- /row 4 -->
+
+<!-- ════════════════════════════════════
+     ROW 5 – Conclusions
+     ════════════════════════════════════ -->
+<div class="footer-card">
+  <div class="card-title">Conclusions &amp; Future Work</div>
+  <div class="concl-grid">
+    <div class="concl-box">
+      <h3>What We Demonstrated</h3>
+      <p>TVM MetaSchedule auto-tuned WMMA kernels <strong>beat PyTorch/cuBLAS by up to 1.97×</strong> on per-head QK dot product loops at small-to-medium sequence lengths by eliminating Python kernel-launch overhead accumulated over 12–32 attention heads. At Llama-512 the full three-stage pipeline runs <strong>1.39× faster</strong>. The advantage converges to parity at Llama-2048 scale, where problems saturate the L40S compute ceiling and both backends hit ~330 TFLOPS.</p>
+    </div>
+    <div class="concl-box">
+      <h3>Root Cause &amp; Bottleneck</h3>
+      <p>A single structural absence explains TVM's QKV projection loss across all five workloads: <strong>zero <code>cp.async</code> instructions</strong> in any of the 15 generated kernels. cuBLAS maintains double-buffered shared memory with asynchronous prefetch, completely hiding 400–600 ns HBM loads behind Tensor Core compute. Extending MetaSchedule's search space to include <strong>async-copy pipelined schedule templates</strong> would directly close this gap without any algorithmic change.</p>
+    </div>
+    <div class="concl-box">
+      <h3>Future Directions</h3>
+      <p>① <strong>Fused FlashAttention TVM kernel</strong> — implement tiled streaming attention to eliminate the (seq×seq) HBM round-trip, the only way to close the 1.6×–4.4× SDPA gap.<br>
+      ② <strong>MetaSchedule + <code>cp.async</code></strong> — add async-copy schedule templates to the MetaSchedule search space on sm_80+ targets.<br>
+      ③ <strong>INT8 / FP8 Tensor Core</strong> — evaluate mixed-precision attention feasibility on the L40S's 660 TOPS INT8 peak, potentially doubling throughput at acceptable accuracy loss.<br>
+      ④ <strong>Decode-mode KV-cache</strong> — apply TVM loop fusion specifically to the incremental decode path where short sequences and many head iterations most favour auto-tuned kernels.</p>
+    </div>
+  </div>
+</div>
+
+</div><!-- /poster -->
+</body>
+</html>

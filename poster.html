@@ -18,6 +18,18 @@
   size: 40in 60in;
   margin: 0;
 }
+@media print {
+  @page {
+    size: 40in 60in;
+    margin: 0;
+  }
+  body {
+    width: 40in;
+    height: 60in;
+    margin: 0;
+    padding: 0;
+  }
+}
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -150,10 +162,10 @@ body {
   border-left: 4pt solid #2563EB;
   background: #EFF6FF;
   border-radius: 0 0.07in 0.07in 0;
-  padding: 0.1in 0.14in;
-  margin: 0.07in 0;
+  padding: 0.18in 0.18in;
+  margin: 0.1in 0;
   font-size: 17pt;
-  line-height: 1.45;
+  line-height: 1.55;
   color: #1E40AF;
 }
 .hbox.green  { border-color: #059669; background: #ECFDF5; color: #064E3B; }
@@ -165,20 +177,24 @@ body {
 .stat-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 0.09in;
-  margin-top: 0.09in;
-  flex-shrink: 0;
+  gap: 0.12in;
+  margin-top: 0.12in;
+  flex: 1;
+  align-content: stretch;
 }
 .stat-box {
   background: #F7FAFC;
   border: 1.5pt solid #E2E8F0;
   border-radius: 0.08in;
-  padding: 0.1in 0.08in;
+  padding: 0.22in 0.1in;
   text-align: center;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
 }
 .stat-val {
   display: block;
-  font-size: 48pt;
+  font-size: 64pt;
   font-weight: 900;
   color: #2563EB;
   line-height: 1.0;
@@ -189,10 +205,10 @@ body {
 .stat-val.purple { color: #7C3AED; }
 .stat-lbl {
   display: block;
-  font-size: 17pt;
+  font-size: 22pt;
   color: #718096;
   line-height: 1.3;
-  margin-top: 0.06in;
+  margin-top: 0.1in;
 }
 
 /* ═══  DATA TABLES  ═══ */
@@ -205,16 +221,16 @@ body {
 .dtable th {
   background: #1E3A6E;
   color: white;
-  padding: 0.07in 0.1in;
-  font-size: 18pt;
+  padding: 0.11in 0.1in;
+  font-size: 20pt;
   font-weight: 700;
   text-align: center;
 }
 .dtable td {
-  padding: 0.07in 0.1in;
+  padding: 0.11in 0.1in;
   text-align: center;
   border-bottom: 1pt solid #E2E8F0;
-  font-size: 17pt;
+  font-size: 19pt;
 }
 .dtable tr:nth-child(even) td { background: #F7FAFC; }
 .win  { color: #065F46; font-weight: 800; }
@@ -501,7 +517,7 @@ svg text { font-family: 'Segoe UI', 'Helvetica Neue', Arial, sans-serif; }
     <!--
       Speedup chart
       Y: 0–2.1, chartArea x=90..1080, y=30..400 (h=370), yScale=370/2.1=176.19
-      chartBottom=400, breakeven y=400-176.19=223.8
+      chartBottom=400, brkeven y=400-176.19=223.8
       4 bars per group, barW=38, gap=6, groupW=4*38+3*6=170, half=85
       Centers: 175, 367, 559, 751, 943
       Group starts: 90, 282, 474, 666, 858
@@ -512,110 +528,105 @@ svg text { font-family: 'Segoe UI', 'Helvetica Neue', Arial, sans-serif; }
       Gridlines: 0.5→y=312, 1.0→y=223.8, 1.5→y=135.7, 2.0→y=47.6
     -->
     <!--
-      REDRAWN LARGE: viewBox 0 0 1280 710
-      Chart area: x=80..1200 (w=1120), y=40..580 (h=540)
-      yScale = 540/2.1 = 257.1   chartBottom=580
-      Gridlines: 0→580, 0.5→451, 1.0→323(breakeven), 1.5→194, 2.0→66
-      barW=44, gap=7, groupW=197, interGroupGap=34
-      G1 start=80, G2=311, G3=542, G4=773, G5=1004  last bar end=1201 ✓
-      Group centers: G1=179, G2=410, G3=641, G4=872, G5=1103
+      FINAL: viewBox 0 0 1280 950
+      Chart area: x=80..1200 (w=1120), y=40..840 (h=800)
+      yScale = 800/2.1 = 381   chartBottom=840
     -->
-    <svg viewBox="0 0 1280 710" style="width:100%;height:auto;margin-top:0.03in">
-      <rect x="80" y="40" width="1120" height="540" fill="#FAFCFF" stroke="#E2E8F0" stroke-width="1.5" rx="4"/>
+    <svg viewBox="0 0 1280 950" style="width:100%;height:auto;margin-top:0.03in">
+      <rect x="80" y="40" width="1120" height="800" fill="#FAFCFF" stroke="#E2E8F0" stroke-width="1.5" rx="4"/>
 
-      <!-- Gridlines -->
-      <line x1="80" y1="580" x2="1200" y2="580" stroke="#94A3B8" stroke-width="2"/>
-      <text x="70" y="584" text-anchor="end" font-size="22" fill="#64748B">0</text>
+      <!-- Gridlines (yScale=381, chartBottom=840) -->
+      <line x1="80" y1="840" x2="1200" y2="840" stroke="#94A3B8" stroke-width="2"/>
+      <text x="70" y="844" text-anchor="end" font-size="22" fill="#64748B">0</text>
 
-      <line x1="80" y1="451" x2="1200" y2="451" stroke="#CBD5E1" stroke-width="1.2" stroke-dasharray="6,4"/>
-      <text x="70" y="455" text-anchor="end" font-size="22" fill="#64748B">0.5</text>
+      <line x1="80" y1="650" x2="1200" y2="650" stroke="#CBD5E1" stroke-width="1.2" stroke-dasharray="6,4"/>
+      <text x="70" y="654" text-anchor="end" font-size="22" fill="#64748B">0.5</text>
 
-      <line x1="80" y1="323" x2="1200" y2="323" stroke="#EF4444" stroke-width="3" stroke-dasharray="10,6"/>
-      <text x="70" y="327" text-anchor="end" font-size="22" fill="#EF4444" font-weight="700">1.0</text>
-      <rect x="1203" y="308" width="112" height="28" fill="#FEF2F2" rx="3"/>
-      <text x="1259" y="326" text-anchor="middle" font-size="18" fill="#DC2626" font-weight="700">breakeven</text>
+      <line x1="80" y1="459" x2="1200" y2="459" stroke="#EF4444" stroke-width="3" stroke-dasharray="10,6"/>
+      <text x="70" y="463" text-anchor="end" font-size="22" fill="#EF4444" font-weight="700">1.0</text>
+      <rect x="1203" y="444" width="112" height="28" fill="#FEF2F2" rx="3"/>
 
-      <line x1="80" y1="194" x2="1200" y2="194" stroke="#CBD5E1" stroke-width="1.2" stroke-dasharray="6,4"/>
-      <text x="70" y="198" text-anchor="end" font-size="22" fill="#64748B">1.5</text>
+      <line x1="80" y1="269" x2="1200" y2="269" stroke="#CBD5E1" stroke-width="1.2" stroke-dasharray="6,4"/>
+      <text x="70" y="273" text-anchor="end" font-size="22" fill="#64748B">1.5</text>
 
-      <line x1="80" y1="66" x2="1200" y2="66" stroke="#CBD5E1" stroke-width="1.2" stroke-dasharray="6,4"/>
-      <text x="70" y="70" text-anchor="end" font-size="22" fill="#64748B">2.0</text>
+      <line x1="80" y1="78" x2="1200" y2="78" stroke="#CBD5E1" stroke-width="1.2" stroke-dasharray="6,4"/>
+      <text x="70" y="82" text-anchor="end" font-size="22" fill="#64748B">2.0</text>
 
-      <line x1="80" y1="40" x2="80" y2="580" stroke="#475569" stroke-width="2.5"/>
-      <text x="22" y="310" text-anchor="middle" font-size="26" fill="#475569" transform="rotate(-90 22 310)">Speedup (PT / TVM)</text>
+      <line x1="80" y1="40" x2="80" y2="840" stroke="#475569" stroke-width="2.5"/>
+      <text x="22" y="440" text-anchor="middle" font-size="26" fill="#475569" transform="rotate(-90 22 440)">Speedup (PT / TVM)</text>
 
-      <!-- G1: BERT-128  h: 170,352,316,311  y: 410,228,264,269 -->
-      <rect x="80"  y="410" width="44" height="170" fill="#94A3B8" rx="3"/>
-      <rect x="131" y="228" width="44" height="352" fill="#3B82F6" rx="3"/>
-      <rect x="182" y="264" width="44" height="316" fill="#0D9488" rx="3"/>
-      <rect x="233" y="269" width="44" height="311" fill="#8B5CF6" rx="3"/>
-      <text x="102" y="402" text-anchor="middle" font-size="18" fill="#475569" font-weight="700">0.66</text>
-      <text x="153" y="220" text-anchor="middle" font-size="18" fill="#1D4ED8" font-weight="700">1.37</text>
-      <text x="204" y="256" text-anchor="middle" font-size="18" fill="#065F46" font-weight="700">1.23</text>
-      <text x="255" y="261" text-anchor="middle" font-size="18" fill="#5B21B6" font-weight="700">1.21</text>
-      <text x="179" y="604" text-anchor="middle" font-size="22" fill="#374151" font-weight="700">BERT-128</text>
+      <!-- G1: BERT-128  (x: 80,131,182,233  centers: 102,153,204,255) -->
+      <rect x="80"  y="588" width="44" height="252" fill="#94A3B8" rx="3"/>
+      <rect x="131" y="319" width="44" height="521" fill="#3B82F6" rx="3"/>
+      <rect x="182" y="371" width="44" height="469" fill="#0D9488" rx="3"/>
+      <rect x="233" y="379" width="44" height="461" fill="#8B5CF6" rx="3"/>
+      <text x="102" y="580" text-anchor="middle" font-size="18" fill="#475569" font-weight="700">0.66</text>
+      <text x="153" y="311" text-anchor="middle" font-size="18" fill="#1D4ED8" font-weight="700">1.37</text>
+      <text x="204" y="363" text-anchor="middle" font-size="18" fill="#065F46" font-weight="700">1.23</text>
+      <text x="255" y="371" text-anchor="middle" font-size="18" fill="#5B21B6" font-weight="700">1.21</text>
+      <text x="179" y="866" text-anchor="middle" font-size="22" fill="#374151" font-weight="700">BERT-128</text>
 
-      <!-- G2: BERT-512  h: 147,345,321,306  y: 433,235,259,274 -->
-      <rect x="311" y="433" width="44" height="147" fill="#94A3B8" rx="3"/>
-      <rect x="362" y="235" width="44" height="345" fill="#3B82F6" rx="3"/>
-      <rect x="413" y="259" width="44" height="321" fill="#0D9488" rx="3"/>
-      <rect x="464" y="274" width="44" height="306" fill="#8B5CF6" rx="3"/>
-      <text x="333" y="425" text-anchor="middle" font-size="18" fill="#475569" font-weight="700">0.57</text>
-      <text x="384" y="227" text-anchor="middle" font-size="18" fill="#1D4ED8" font-weight="700">1.34</text>
-      <text x="435" y="251" text-anchor="middle" font-size="18" fill="#065F46" font-weight="700">1.25</text>
-      <text x="486" y="266" text-anchor="middle" font-size="18" fill="#5B21B6" font-weight="700">1.19</text>
-      <text x="410" y="604" text-anchor="middle" font-size="22" fill="#374151" font-weight="700">BERT-512</text>
+      <!-- G2: BERT-512  (x: 311,362,413,464  centers: 333,384,435,486) -->
+      <rect x="311" y="623" width="44" height="217" fill="#94A3B8" rx="3"/>
+      <rect x="362" y="329" width="44" height="511" fill="#3B82F6" rx="3"/>
+      <rect x="413" y="364" width="44" height="476" fill="#0D9488" rx="3"/>
+      <rect x="464" y="387" width="44" height="453" fill="#8B5CF6" rx="3"/>
+      <text x="333" y="615" text-anchor="middle" font-size="18" fill="#475569" font-weight="700">0.57</text>
+      <text x="384" y="321" text-anchor="middle" font-size="18" fill="#1D4ED8" font-weight="700">1.34</text>
+      <text x="435" y="356" text-anchor="middle" font-size="18" fill="#065F46" font-weight="700">1.25</text>
+      <text x="486" y="379" text-anchor="middle" font-size="18" fill="#5B21B6" font-weight="700">1.19</text>
+      <text x="410" y="866" text-anchor="middle" font-size="22" fill="#374151" font-weight="700">BERT-512</text>
 
-      <!-- G3: Llama-128  h: 170,365,327,324  y: 410,215,253,256 -->
-      <rect x="542" y="410" width="44" height="170" fill="#94A3B8" rx="3"/>
-      <rect x="593" y="215" width="44" height="365" fill="#3B82F6" rx="3"/>
-      <rect x="644" y="253" width="44" height="327" fill="#0D9488" rx="3"/>
-      <rect x="695" y="256" width="44" height="324" fill="#8B5CF6" rx="3"/>
-      <text x="564" y="402" text-anchor="middle" font-size="18" fill="#475569" font-weight="700">0.66</text>
-      <text x="615" y="207" text-anchor="middle" font-size="18" fill="#1D4ED8" font-weight="700">1.42</text>
-      <text x="666" y="245" text-anchor="middle" font-size="18" fill="#065F46" font-weight="700">1.27</text>
-      <text x="717" y="248" text-anchor="middle" font-size="18" fill="#5B21B6" font-weight="700">1.26</text>
-      <text x="641" y="604" text-anchor="middle" font-size="22" fill="#374151" font-weight="700">Llama-128</text>
+      <!-- G3: Llama-128  (x: 542,593,644,695  centers: 564,615,666,717) -->
+      <rect x="542" y="588" width="44" height="252" fill="#94A3B8" rx="3"/>
+      <rect x="593" y="299" width="44" height="541" fill="#3B82F6" rx="3"/>
+      <rect x="644" y="356" width="44" height="484" fill="#0D9488" rx="3"/>
+      <rect x="695" y="360" width="44" height="480" fill="#8B5CF6" rx="3"/>
+      <text x="564" y="580" text-anchor="middle" font-size="18" fill="#475569" font-weight="700">0.66</text>
+      <text x="615" y="291" text-anchor="middle" font-size="18" fill="#1D4ED8" font-weight="700">1.42</text>
+      <text x="666" y="348" text-anchor="middle" font-size="18" fill="#065F46" font-weight="700">1.27</text>
+      <text x="717" y="352" text-anchor="middle" font-size="18" fill="#5B21B6" font-weight="700">1.26</text>
+      <text x="641" y="866" text-anchor="middle" font-size="22" fill="#374151" font-weight="700">Llama-128</text>
 
-      <!-- G4: Llama-512  h: 185,507,396,357  y: 395,73,184,223 (BEST) -->
-      <rect x="773" y="395" width="44" height="185" fill="#94A3B8" rx="3"/>
-      <rect x="824" y="73"  width="44" height="507" fill="#3B82F6" rx="3"/>
-      <rect x="875" y="184" width="44" height="396" fill="#0D9488" rx="3"/>
-      <rect x="926" y="223" width="44" height="357" fill="#8B5CF6" rx="3"/>
-      <text x="795" y="387" text-anchor="middle" font-size="18" fill="#475569" font-weight="700">0.72</text>
-      <text x="846" y="62" text-anchor="middle" font-size="20" fill="#1D4ED8" font-weight="900">★ 1.97×</text>
-      <text x="846" y="46" text-anchor="middle" font-size="17" fill="#1D4ED8">best QK speedup</text>
-      <text x="897" y="176" text-anchor="middle" font-size="18" fill="#065F46" font-weight="700">1.54</text>
-      <text x="948" y="215" text-anchor="middle" font-size="18" fill="#5B21B6" font-weight="700">1.39</text>
-      <text x="872" y="604" text-anchor="middle" font-size="22" fill="#374151" font-weight="700">Llama-512</text>
+      <!-- G4: Llama-512  (x: 773,824,875,926  centers: 795,846,897,948) — BEST -->
+      <rect x="773" y="566" width="44" height="274" fill="#94A3B8" rx="3"/>
+      <rect x="824" y="88"  width="44" height="752" fill="#3B82F6" rx="3"/>
+      <rect x="875" y="253" width="44" height="587" fill="#0D9488" rx="3"/>
+      <rect x="926" y="310" width="44" height="530" fill="#8B5CF6" rx="3"/>
+      <text x="795" y="558" text-anchor="middle" font-size="18" fill="#475569" font-weight="700">0.72</text>
+      <text x="846" y="78"  text-anchor="middle" font-size="21" fill="#1D4ED8" font-weight="900">★ 1.97×</text>
+      <text x="846" y="60"  text-anchor="middle" font-size="17" fill="#1D4ED8">best QK speedup</text>
+      <text x="897" y="245" text-anchor="middle" font-size="18" fill="#065F46" font-weight="700">1.54</text>
+      <text x="948" y="302" text-anchor="middle" font-size="18" fill="#5B21B6" font-weight="700">1.39</text>
+      <text x="872" y="866" text-anchor="middle" font-size="22" fill="#374151" font-weight="700">Llama-512</text>
 
-      <!-- G5: Llama-2048  h: 257,234,242,247  y: 323,346,338,333 -->
-      <rect x="1004" y="323" width="44" height="257" fill="#94A3B8" rx="3" opacity="0.75"/>
-      <rect x="1055" y="346" width="44" height="234" fill="#3B82F6" rx="3" opacity="0.75"/>
-      <rect x="1106" y="338" width="44" height="242" fill="#0D9488" rx="3" opacity="0.75"/>
-      <rect x="1157" y="333" width="44" height="247" fill="#8B5CF6" rx="3" opacity="0.75"/>
-      <text x="1026" y="315" text-anchor="middle" font-size="18" fill="#475569" font-weight="700">1.00</text>
-      <text x="1077" y="338" text-anchor="middle" font-size="18" fill="#1D4ED8" font-weight="700">0.91</text>
-      <text x="1128" y="330" text-anchor="middle" font-size="18" fill="#065F46" font-weight="700">0.94</text>
-      <text x="1179" y="325" text-anchor="middle" font-size="18" fill="#5B21B6" font-weight="700">0.96</text>
-      <text x="1103" y="302" text-anchor="middle" font-size="18" fill="#991B1B" font-style="italic">cuBLAS catches up</text>
-      <text x="1103" y="604" text-anchor="middle" font-size="22" fill="#374151" font-weight="700">Llama-2048</text>
+      <!-- G5: Llama-2048  (x: 1004,1055,1106,1157) — all ≤ breakeven -->
+      <rect x="1004" y="459" width="44" height="381" fill="#94A3B8" rx="3" opacity="0.75"/>
+      <rect x="1055" y="493" width="44" height="347" fill="#3B82F6" rx="3" opacity="0.75"/>
+      <rect x="1106" y="482" width="44" height="358" fill="#0D9488" rx="3" opacity="0.75"/>
+      <rect x="1157" y="474" width="44" height="366" fill="#8B5CF6" rx="3" opacity="0.75"/>
+      <text x="1026" y="451" text-anchor="middle" font-size="18" fill="#475569" font-weight="700">1.00</text>
+      <text x="1077" y="485" text-anchor="middle" font-size="18" fill="#1D4ED8" font-weight="700">0.91</text>
+      <text x="1128" y="474" text-anchor="middle" font-size="18" fill="#065F46" font-weight="700">0.94</text>
+      <text x="1179" y="466" text-anchor="middle" font-size="18" fill="#5B21B6" font-weight="700">0.96</text>
+      <text x="1103" y="438" text-anchor="middle" font-size="18" fill="#991B1B" font-style="italic">cuBLAS catches up</text>
+      <text x="1103" y="866" text-anchor="middle" font-size="22" fill="#374151" font-weight="700">Llama-2048</text>
 
       <!-- Zone labels -->
       <rect x="82" y="42" width="200" height="30" fill="#ECFDF5" rx="3" opacity="0.88"/>
       <text x="182" y="62" text-anchor="middle" font-size="20" fill="#065F46" font-weight="700">▲ TVM Faster</text>
-      <rect x="82" y="548" width="228" height="30" fill="#FEF2F2" rx="3" opacity="0.88"/>
-      <text x="196" y="568" text-anchor="middle" font-size="20" fill="#991B1B" font-weight="700">▼ PyTorch Faster</text>
+      <rect x="82" y="808" width="228" height="30" fill="#FEF2F2" rx="3" opacity="0.88"/>
+      <text x="196" y="828" text-anchor="middle" font-size="20" fill="#991B1B" font-weight="700">▼ PyTorch Faster</text>
 
       <!-- Legend -->
-      <rect x="150" y="628" width="24" height="20" fill="#94A3B8" rx="3"/>
-      <text x="180" y="644" font-size="22" fill="#374151">QKV Proj</text>
-      <rect x="400" y="628" width="24" height="20" fill="#3B82F6" rx="3"/>
-      <text x="430" y="644" font-size="22" fill="#374151">QK Dot Loop</text>
-      <rect x="680" y="628" width="24" height="20" fill="#0D9488" rx="3"/>
-      <text x="710" y="644" font-size="22" fill="#374151">AV Sum Loop</text>
-      <rect x="940" y="628" width="24" height="20" fill="#8B5CF6" rx="3"/>
-      <text x="970" y="644" font-size="22" fill="#374151">Full Pipeline</text>
+      <rect x="150" y="900" width="24" height="20" fill="#94A3B8" rx="3"/>
+      <text x="180" y="916" font-size="22" fill="#374151">QKV Proj</text>
+      <rect x="400" y="900" width="24" height="20" fill="#3B82F6" rx="3"/>
+      <text x="430" y="916" font-size="22" fill="#374151">QK Dot Loop</text>
+      <rect x="680" y="900" width="24" height="20" fill="#0D9488" rx="3"/>
+      <text x="710" y="916" font-size="22" fill="#374151">AV Sum Loop</text>
+      <rect x="940" y="900" width="24" height="20" fill="#8B5CF6" rx="3"/>
+      <text x="970" y="916" font-size="22" fill="#374151">Full Pipeline</text>
     </svg>
   </div>
 
